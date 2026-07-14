@@ -1,0 +1,53 @@
+{
+  "age_feature": "age_at_valuation",
+  "ewm_half_life_days": 90.0,
+  "form_feature": "recency_weighted_rating",
+  "numeric_features": [
+    "log_previous_market_value",
+    "previous_log_value_change",
+    "age_at_valuation",
+    "age_squared",
+    "interval_days",
+    "valuation_year",
+    "valuation_month_sin",
+    "valuation_month_cos",
+    "log_minutes",
+    "log_appearances",
+    "start_share",
+    "average_rating",
+    "recency_weighted_rating",
+    "rating_last_90_days",
+    "rating_volatility",
+    "recent_rating_trend",
+    "threat_component_average",
+    "creation_component_average",
+    "progression_component_average",
+    "retention_component_average",
+    "attacking_xpv_component_average",
+    "defensive_component_average",
+    "finishing_component_average",
+    "goals_per90",
+    "assists_per90",
+    "xg_per90",
+    "xgot_per90",
+    "xa_per90",
+    "goals_over_xg_per90",
+    "assists_over_xa_per90"
+  ],
+  "player_effects_artifact": "player_effects.parquet",
+  "player_id_column": "transfermarkt_player_id",
+  "position_column": "position_group",
+  "position_levels": [
+    "Defender",
+    "Forward",
+    "Goalkeeper",
+    "Midfielder"
+  ],
+  "rating_version": "post_match_v2",
+  "rolling_windows": [
+    3,
+    20
+  ],
+  "selected_prediction": "bayesian_hierarchical_median",
+  "target": "target_log_value_change"
+}

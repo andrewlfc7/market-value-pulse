@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: market-value-pulse
+      POSTGRES_USER: mvp
+      POSTGRES_PASSWORD: mvp
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U mvp -d market-value-pulse"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  db-init:
+    image: postgres:17-alpine
+    environment:
+      PGPASSWORD: mvp
+    volumes:
+      - ./database/schema.sql:/schema.sql:ro
+    command:
+      [
+        "psql",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-h",
+        "postgres",
+        "-U",
+        "mvp",
+        "-d",
+        "market-value-pulse",
+        "-f",
+        "/schema.sql"
+      ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    volumes:
+      - ./data/serving:/app/data/serving:ro
+    environment:
+      DATABASE_URL: "postgresql://mvp:mvp@postgres:5432/market-value-pulse"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  web:
+    build:
+      context: ./frontend
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:8000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

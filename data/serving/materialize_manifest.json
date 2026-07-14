@@ -1,0 +1,35 @@
+{
+  "as_of_date": "2026-07-13",
+  "competition": "EPL",
+  "database_run_id": "db-20260714T030114Z-d94ab0d6",
+  "enrichment": {
+    "failed": 0,
+    "processed": 0,
+    "selected": 0,
+    "skipped": 380
+  },
+  "mapping": {
+    "mapped_players": 625,
+    "output_path": "data/normalized/entity_resolution/player_mapping_exact.parquet",
+    "review_path": "data/normalized/entity_resolution/player_mapping_review.parquet",
+    "review_players": 52
+  },
+  "predictions_path": null,
+  "progress_log": "data/serving/_runs/run_id=20260714T030035Z-375a27f8/progress.jsonl",
+  "ratings": {
+    "mode": "incremental_update",
+    "processed_matches": 0,
+    "rating_rows": 11492,
+    "skipped_matches": 380
+  },
+  "run_id": "20260714T030035Z-375a27f8",
+  "season": "2025-2026",
+  "serving": {
+    "match_impact_rows": 11492,
+    "output_root": "data/serving",
+    "players": 493,
+    "valuation_rows": 10433
+  },
+  "status": "succeeded",
+  "valuation_status": "skipped_no_post_valuation_matches"
+}

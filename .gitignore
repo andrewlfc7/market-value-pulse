@@ -1,0 +1,93 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local secrets and configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editors and operating system
+.DS_Store
+.vscode/
+.idea/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Browser tests
+playwright-report/
+test-results/
+
+# Local databases, logs and temporary storage
+storage/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Raw acquisition outputs
+data/raw/**
+!data/raw/.gitkeep
+!data/raw/transfermarkt/
+data/raw/transfermarkt/**
+!data/raw/transfermarkt/.gitkeep
+
+# Copied source data and generated pipeline outputs
+data/external/**
+data/normalized/**
+data/features/**
+data/state/**
+data/replays/**
+data/tmp/**
+
+# Keep large training datasets and failed candidates local.
+data/modeling/**
+
+# Include only the promoted valuation model required for scoring.
+!data/modeling/
+!data/modeling/valuation_model/
+data/modeling/valuation_model/*
+
+!data/modeling/valuation_model/active.json
+!data/modeling/valuation_model/model_version=20260714T022742Z/
+!data/modeling/valuation_model/model_version=20260714T022742Z/**
+
+# Include the prepared current-scoring snapshot.
+!data/modeling/valuation_model/current_scoring_features.parquet
+!data/modeling/valuation_model/current_scoring_features_summary.json
+
+# Include the lightweight serving snapshots used by the demo/API fallback.
+data/serving/**
+!data/serving/
+!data/serving/players.parquet
+!data/serving/valuation_history.parquet
+!data/serving/player_valuation_predictions.parquet
+!data/serving/match_impacts.parquet
+!data/serving/materialize_manifest.json
+!data/serving/serving_build_summary.json
+!data/serving/scoring_summary.json
+
+# Fitted feature artifacts are installed locally for inference.
+models/features/**
+!models/features/README.md
+
+# Rating statistics are fitted from local season data.
+models/ratings/**
+!models/ratings/README.md
+
+# Notebook checkpoints
+.ipynb_checkpoints/

@@ -1,0 +1,14 @@
+{
+  "as_of_date": "2026-06-03",
+  "config": {
+    "ewm_half_life_days": 90.0,
+    "maximum_interval_days": 365,
+    "minimum_interval_days": 14,
+    "minimum_interval_minutes": 1.0,
+    "rolling_long_matches": 20,
+    "rolling_short_matches": 3
+  },
+  "observations": 408,
+  "output_path": "data/modeling/valuation_model/current_scoring_features.parquet",
+  "players": 408
+}

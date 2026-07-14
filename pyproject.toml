@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "market-value-pulse"
+version = "0.6.0"
+description = "Incremental football player valuation data pipeline."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "beautifulsoup4>=4.12,<5",
+  "fastapi>=0.115,<1",
+  "httpx>=0.27,<1.0",
+  "joblib>=1.4,<2",
+  "lightgbm>=4,<5",
+  "numpy>=2.5.1",
+  "orjson>=3.10,<4",
+  "pandas>=3.0.3",
+  "playwright>=1.50,<2",
+  "polars>=1.0,<2.0",
+  "psycopg[binary]==3.3.4",
+  "pyarrow>=25.0.0",
+  "rich>=13,<16",
+  # Feature-model joblib artifacts were trained with this exact version.
+  # Scikit-learn does not support loading persisted estimators across versions.
+  "ruff>=0.15.21",
+  "scikit-learn==1.8.0",
+  "selectolax>=0.3.21,<1.0",
+  "typer>=0.12,<1.0",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9"]
+train = [
+  "jax==0.4.38",
+  "jaxlib==0.4.38",
+  "matplotlib>=3.11.0",
+  "numpyro==0.17.0",
+  "statsmodels>=0.14.6",
+]
+
+[project.scripts]
+mvp = "cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "src/ingestion",
+  "src/features",
+  "src/entity_resolution",
+  "src/serving",
+  "src/database",
+  "src/api",
+  "src/ratings",
+  "src/valuation",
+  "src/pipelines",
+]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/cli.py" = "cli.py"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

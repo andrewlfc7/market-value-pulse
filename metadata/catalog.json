@@ -1,0 +1,103 @@
+{
+  "version": "0.6.0",
+  "datasets": [
+    {
+      "name": "whoscored_raw_runs",
+      "layer": "raw",
+      "owner": "data-engineering",
+      "grain": "one immutable source response per run and match",
+      "path": "data/raw/whoscored/"
+    },
+    {
+      "name": "transfermarkt_raw_runs",
+      "layer": "raw",
+      "owner": "data-engineering",
+      "grain": "one immutable source response per run and player",
+      "path": "data/raw/transfermarkt/"
+    },
+    {
+      "name": "whoscored_matches",
+      "layer": "normalized",
+      "owner": "data-engineering",
+      "grain": "one row per match",
+      "path": "data/normalized/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/matches.parquet"
+    },
+    {
+      "name": "whoscored_player_matches",
+      "layer": "normalized",
+      "owner": "data-engineering",
+      "grain": "one row per player-match",
+      "path": "data/normalized/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/player_matches.parquet"
+    },
+    {
+      "name": "whoscored_events",
+      "layer": "normalized",
+      "owner": "data-engineering",
+      "grain": "one row per stable match-event ID",
+      "path": "data/normalized/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/events.parquet"
+    },
+    {
+      "name": "transfermarkt_players_and_valuations",
+      "layer": "normalized",
+      "owner": "data-engineering",
+      "grain": "one row per player or player valuation date",
+      "path": "data/normalized/transfermarkt/competition=<competition>/season=<season>/run_id=<id>/"
+    },
+    {
+      "name": "player_source_mapping",
+      "layer": "normalized",
+      "owner": "data-engineering",
+      "grain": "one approved one-to-one WhoScored-to-Transfermarkt player mapping",
+      "path": "data/normalized/entity_resolution/player_mapping_exact.parquet"
+    },
+    {
+      "name": "match_action_features",
+      "layer": "features",
+      "owner": "data-science",
+      "grain": "one row per scored shot, pass, carry, or defensive action",
+      "path": "data/features/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/"
+    },
+    {
+      "name": "player_match_features",
+      "layer": "features",
+      "owner": "data-science",
+      "grain": "one row per player-match",
+      "path": "data/features/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/player_match_features.parquet"
+    },
+    {
+      "name": "player_match_ratings",
+      "layer": "features",
+      "owner": "data-science",
+      "grain": "one immutable post-match rating per player-match and model version",
+      "path": "data/features/ratings/competition=<competition>/season=<season>/player_match_ratings.parquet"
+    },
+    {
+      "name": "rating_processing_state",
+      "layer": "state",
+      "owner": "data-engineering",
+      "grain": "one source hash per processed match plus one current form row per player",
+      "path": "data/state/ratings/competition=<competition>/season=<season>/"
+    },
+    {
+      "name": "valuation_model_features_and_predictions",
+      "layer": "modeling",
+      "owner": "data-science",
+      "grain": "one labeled valuation interval or one current player scoring row",
+      "path": "data/modeling/valuation_model/"
+    },
+    {
+      "name": "api_serving_tables",
+      "layer": "serving",
+      "owner": "analytics-engineering",
+      "grain": "player snapshot, valuation history row, or player-match impact row",
+      "path": "data/serving/"
+    },
+    {
+      "name": "historical_replay_results",
+      "layer": "simulation",
+      "owner": "data-engineering",
+      "grain": "one row per chronologically replayed match",
+      "path": "data/replays/"
+    }
+  ]
+}

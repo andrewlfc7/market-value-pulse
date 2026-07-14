@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "beats_ols_mae": true,
+    "beats_zero_change_direction": true,
+    "beats_zero_change_mae": true,
+    "divergences_at_most_five": true,
+    "maximum_r_hat_at_most_1_05": true,
+    "positive_holdout_r2": true,
+    "predictive_coverage_at_least_80_percent": true
+  },
+  "ols_mae": 0.13515686380184286,
+  "passed": true,
+  "selected_direction_accuracy": 0.5691318327974276,
+  "selected_mae": 0.12466447203422731,
+  "zero_change_direction_accuracy": 0.37727759914255093,
+  "zero_change_mae": 0.16583364180245486
+}

@@ -1,0 +1,9 @@
+{
+  "competitions": [
+    {"key":"EPL","name":"Premier League","aliases":["epl","premier-league","premier league","england-premier-league"],"region_id":252,"tournament_id":2,"slug":"england-premier-league","expected_matches":380},
+    {"key":"LALIGA","name":"LaLiga","aliases":["laliga","la-liga","la liga","spain-laliga"],"region_id":206,"tournament_id":4,"slug":"spain-laliga","expected_matches":380},
+    {"key":"SERIE_A","name":"Serie A","aliases":["serie-a","serie a","italy-serie-a"],"region_id":108,"tournament_id":5,"slug":"italy-serie-a","expected_matches":380,"stage_overrides":{"2022-2023":21087}},
+    {"key":"BUNDESLIGA","name":"Bundesliga","aliases":["bundesliga","germany-bundesliga"],"region_id":81,"tournament_id":3,"slug":"germany-bundesliga","expected_matches":306},
+    {"key":"LIGUE_1","name":"Ligue 1","aliases":["ligue-1","ligue 1","france-ligue-1"],"region_id":74,"tournament_id":22,"slug":"france-ligue-1","expected_matches":null}
+  ]
+}

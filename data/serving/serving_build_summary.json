@@ -1,0 +1,10 @@
+{
+  "mapping_path": "data/normalized/entity_resolution/player_mapping_exact.parquet",
+  "match_impact_rows": 11492,
+  "note": "Per-match estimated euro deltas remain null until the valuation replay scores before/after state; performance impact is not mislabeled as value movement.",
+  "players": 493,
+  "predictions_path": "data/serving/player_valuation_predictions.parquet",
+  "ratings_path": "data/features/ratings/competition=EPL/season=2025-2026/player_match_ratings.parquet",
+  "valuation_rows": 10433,
+  "valuations_path": "data/normalized/transfermarkt/competition=GB1/season=2025/run_id=20260713T170245Z-3a43dafe/player_valuations.parquet"
+}

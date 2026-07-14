@@ -1,0 +1,6 @@
+{
+  "competition_id": "GB1",
+  "competition_name": "Premier League",
+  "base_url": "https://www.transfermarkt.com",
+  "competition_path_template": "/premier-league/startseite/wettbewerb/GB1/plus/0?saison_id={season}"
+}

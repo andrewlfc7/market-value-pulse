@@ -1,0 +1,13 @@
+{
+  "big_chance_xg": 0.3,
+  "defensive_next_gap_seconds": 12.0,
+  "defensive_previous_gap_seconds": 15.0,
+  "max_carry_m": 60.0,
+  "max_carry_seconds": 10.0,
+  "min_carry_m": 5.0,
+  "min_carry_seconds": 1.0,
+  "own_goal_xg": 0.0,
+  "penalty_xg": 0.776,
+  "spatial_grid_x": 12,
+  "spatial_grid_y": 8
+}

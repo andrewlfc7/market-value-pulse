@@ -1,0 +1,13 @@
+.git
+.venv
+__pycache__
+*.py[cod]
+.pytest_cache
+data
+models/features
+models/ratings/post_match_v1
+frontend/node_modules
+frontend/.next
+*.zip
+*.log
+.DS_Store

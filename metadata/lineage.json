@@ -1,0 +1,44 @@
+{
+  "version": "0.6.0",
+  "nodes": [
+    "WhoScored raw",
+    "WhoScored normalized",
+    "Event-derived features",
+    "Player-match features",
+    "Post-match rating",
+    "Player form state",
+    "Transfermarkt raw",
+    "Transfermarkt normalized",
+    "Player entity mapping",
+    "Valuation estimate",
+    "PostgreSQL serving",
+    "API / dashboard",
+    "Historical replay"
+  ],
+  "edges": [
+    ["WhoScored raw", "WhoScored normalized"],
+    ["WhoScored normalized", "Event-derived features"],
+    ["Event-derived features", "Player-match features"],
+    ["Player-match features", "Post-match rating"],
+    ["Post-match rating", "Player form state"],
+    ["Transfermarkt raw", "Transfermarkt normalized"],
+    ["WhoScored normalized", "Player entity mapping"],
+    ["Transfermarkt normalized", "Player entity mapping"],
+    ["Player entity mapping", "Valuation estimate"],
+    ["Player form state", "Valuation estimate"],
+    ["Valuation estimate", "PostgreSQL serving"],
+    ["Post-match rating", "PostgreSQL serving"],
+    ["Transfermarkt normalized", "PostgreSQL serving"],
+    ["PostgreSQL serving", "API / dashboard"],
+    ["WhoScored normalized", "Historical replay"],
+    ["Historical replay", "Event-derived features"],
+    ["Historical replay", "Post-match rating"]
+  ],
+  "incremental_boundaries": [
+    "normalized match _SUCCESS.json",
+    "feature match _SUCCESS.json plus source/config/artifact signature",
+    "processed_matches.parquet feature hash",
+    "PostgreSQL UPSERT primary keys"
+  ],
+  "pending_adapter": null
+}

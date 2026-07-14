@@ -1,0 +1,30 @@
+{
+  "approx_mae_percent": 0.13276831384868593,
+  "direction_accuracy": 0.5691318327974276,
+  "divergences": 3,
+  "mae_log_change": 0.12466447203422731,
+  "model_version": "20260714T022742Z",
+  "ols_mae_log_change": 0.13515686380184286,
+  "players": 450,
+  "predictive_coverage_90": 0.9035369774919614,
+  "promotion_checks": {
+    "beats_ols_mae": true,
+    "beats_zero_change_direction": true,
+    "beats_zero_change_mae": true,
+    "divergences_at_most_five": true,
+    "maximum_r_hat_at_most_1_05": true,
+    "positive_holdout_r2": true,
+    "predictive_coverage_at_least_80_percent": true
+  },
+  "promotion_checks_passed": true,
+  "r2": 0.38764743934583556,
+  "rmse_log_change": 0.21758515041029888,
+  "selected_model": "position_hierarchical_bayesian_student_t",
+  "selected_prediction": "bayesian_hierarchical_median",
+  "spearman_correlation": 0.7043485713691029,
+  "split_date": "2025-05-30 00:00:00",
+  "target": "target_log_value_change",
+  "test_observations": 933,
+  "training_observations": 2368,
+  "zero_change_mae_log_change": 0.16583364180245486
+}

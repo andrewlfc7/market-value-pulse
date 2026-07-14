@@ -1,0 +1,6 @@
+{
+  "artifact_directory": "data/modeling/valuation_model/model_version=20260714T022742Z",
+  "model_version": "20260714T022742Z",
+  "promoted_at": "2026-07-14T02:49:30.420463+00:00",
+  "selected_model": "position_hierarchical_bayesian_student_t"
+}
