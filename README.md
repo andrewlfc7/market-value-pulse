@@ -4,6 +4,16 @@ Market Value Pulse is an incremental football data platform that combines Transf
 
 The repository is designed for continuous operation. A completed match is the unit of work: raw source data is retained, normalized and feature partitions are idempotent, only new or changed feature partitions are rated, and database writes use stable upsert keys.
 
+## Demo
+
+[![Market Value Pulse demo](docs/demo-preview.png)](https://drive.google.com/file/d/1B6l6PET1vru9vvueZiZ-8uF2h1N3ej6K/view?usp=drive_link)
+
+Click the image to watch the application walkthrough.
+
+The walkthrough shows the Dockerized stack starting, the player dashboard, recent
+performance ratings, valuation history, the projected market value, the 90%
+predictive range and the probability of an increase.
+
 ## Current implementation
 
 - Responsible WhoScored competition/season discovery, acquisition and normalization
