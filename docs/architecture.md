@@ -1,84 +1,87 @@
-# Market Value Pulse Architecture
+# Market Value Pulse architecture
 
-This diagram summarizes the end-to-end data flow from acquisition through model scoring and the dashboard.
+## End-to-end system
 
 ```mermaid
 flowchart LR
-    subgraph Sources[Open football sources]
-        WS[WhoScored match pages<br/>events, lineups, minutes]
+    subgraph Sources
+        WS[WhoScored<br/>match events and lineups]
         TM[Transfermarkt<br/>rosters and valuation history]
     end
 
-    subgraph Acquisition[Incremental acquisition]
-        WSI[WhoScored ingestor<br/>rate limits, retries, manifests]
-        TMI[Transfermarkt ingestor<br/>rate limits, retries, manifests]
+    subgraph Acquisition
+        WI[WhoScored ingestion<br/>discovery, retries and manifests]
+        TI[Transfermarkt ingestion<br/>rate limiting, retries and manifests]
     end
 
-    subgraph Storage[Immutable and normalized storage]
-        RAW[(data/raw<br/>immutable source evidence)]
-        NORM[(data/normalized<br/>validated Parquet partitions)]
+    subgraph DataLayer[Storage and validation]
+        RAW[(Immutable raw responses)]
+        NORM[(Normalized Parquet<br/>schema and quality checks)]
     end
 
-    subgraph Features[Feature and rating layer]
-        ENRICH[xG, xGOT, xA, xT, xPV<br/>progression and defensive value]
-        RATINGS[Position-aware post-match ratings]
-        STATE[(Incremental state<br/>hashes, EWM, rolling 3 and 20)]
-        MAP[WhoScored ↔ Transfermarkt<br/>entity resolution and review queue]
+    subgraph FootballFeatures[Performance features]
+        FE[Event enrichment<br/>xG, xGOT, xA, xT and xPV]
+        RT[Position-aware<br/>post-match ratings]
+        ST[(Incremental form state<br/>EWM, rolling 3 and rolling 20)]
+        ER[Entity resolution<br/>exact mapping and review queue]
     end
 
-    subgraph Modeling[Valuation modeling]
-        TRAIN[Leakage-safe valuation intervals]
-        BAYES[Hierarchical Bayesian Student-t model<br/>position, age, form and player effects]
-        GATES[Chronological holdout<br/>promotion quality gates]
-        ACTIVE[(Versioned active model)]
-        SCORE[Current scoring<br/>midpoint, 90% range and increase probability]
+    subgraph Valuation[Valuation modeling]
+        DS[Leakage-safe<br/>valuation intervals]
+        BM[Hierarchical Bayesian<br/>Student-t regression]
+        QC[Chronological holdout<br/>and promotion checks]
+        AM[(Active model)]
+        CS[Current player scoring<br/>estimate, 90% range and probability]
     end
 
-    subgraph Serving[Serving and application]
-        PARQUET[(Canonical serving Parquets)]
+    subgraph Application[Serving and application]
+        SP[(Serving Parquet)]
         PG[(PostgreSQL)]
         API[FastAPI]
         UI[Next.js dashboard]
     end
 
-    WS --> WSI --> RAW
-    TM --> TMI --> RAW
+    WS --> WI --> RAW
+    TM --> TI --> RAW
     RAW --> NORM
-    NORM --> ENRICH --> RATINGS
-    RATINGS --> STATE
-    NORM --> MAP
-    RATINGS --> TRAIN
-    MAP --> TRAIN
-    NORM --> TRAIN
-    TRAIN --> BAYES --> GATES --> ACTIVE
-    ACTIVE --> SCORE
-    STATE --> SCORE
-    MAP --> SCORE
-    SCORE --> PARQUET
-    NORM --> PARQUET
-    RATINGS --> PARQUET
-    PARQUET --> PG --> API --> UI
-    PARQUET -. local fallback .-> API
+    NORM --> FE --> RT --> ST
+    NORM --> ER
+    RT --> DS
+    ER --> DS
+    NORM --> DS
+    DS --> BM --> QC --> AM
+    AM --> CS
+    ST --> CS
+    ER --> CS
+    CS --> SP
+    NORM --> SP
+    RT --> SP
+    SP --> PG --> API --> UI
+    SP -. local fallback .-> API
 ```
 
-## Continuous-update path
+## Incremental update path
 
 ```mermaid
-sequenceDiagram
-    participant Source as New completed match
-    participant Pipeline as Incremental pipeline
-    participant Rating as Rating and form state
-    participant Model as Active valuation model
-    participant DB as Serving tables / PostgreSQL
-    participant UI as Dashboard
+flowchart LR
+    A[New completed match]
+    B[Ingest and normalize]
+    C{Content hash<br/>new or changed?}
+    D[Skip unchanged partition]
+    E[Enrich affected match]
+    F[Append player ratings]
+    G[Refresh rolling form state]
+    H[Build current features<br/>for affected players]
+    I[Score with active<br/>valuation model]
+    J[Write estimate,<br/>90% range and probability]
+    K[Update serving Parquet<br/>and PostgreSQL]
+    L[Dashboard reads<br/>refreshed player outlook]
 
-    Source->>Pipeline: ingest and normalize match
-    Pipeline->>Pipeline: validate schema and compare content hash
-    Pipeline->>Rating: enrich only the new or changed match
-    Rating->>Rating: append player ratings and refresh rolling form
-    Rating->>Model: build current features for affected players
-    Model->>DB: write estimate, 90% range and increase probability
-    DB->>UI: expose refreshed player outlook
+    A --> B --> C
+    C -- No --> D
+    C -- Yes --> E --> F --> G --> H --> I --> J --> K --> L
 ```
 
-The architecture is intentionally batch-incremental rather than stream-heavy. A completed match is the unit of work, allowing idempotent retries, deterministic replay and affected-player rescoring without rebuilding all historical data.
+A completed match is the unit of incremental work. Content hashes make retries
+idempotent, unchanged partitions are skipped, and only affected player state and
+forecasts need to be refreshed.

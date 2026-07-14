@@ -27,18 +27,21 @@ The feature engine, post-match rating, state management and valuation workflow a
 
 ## Architecture and storage lifecycle
 
+The detailed system and incremental-update diagrams are available in
+[`docs/architecture.md`](docs/architecture.md).
+
 ```text
-source pages
-  → data/raw/                 immutable source responses and run manifests
-  → data/normalized/          parsed source tables, partitioned by match/run
-  → data/features/            enriched actions, player-match features and ratings
-  → data/state/               processed hashes and current player form state
-  → data/modeling/            valuation training/scoring artifacts
-  → data/serving/             API-ready Parquet snapshots
+WhoScored + Transfermarkt
+  → immutable raw responses and run manifests
+  → validated, partitioned normalized Parquet
+  → event enrichment and position-aware player ratings
+  → rolling form state and entity resolution
+  → valuation training/current scoring
+  → API-ready serving Parquet
   → PostgreSQL → FastAPI → Next.js
 ```
 
-The source tree is intentionally flat—there is no second `market_value_pulse/` package below `src/`:
+The main application modules are:
 
 ```text
 src/
@@ -53,8 +56,6 @@ src/
 ├── valuation/
 └── cli.py
 ```
-
-
 ## Quick demonstration
 
 After the prepared data and model artifacts are available, start the complete
@@ -138,8 +139,8 @@ scripts/migrate-existing-data.sh \
   "/path/to/feature-model-artifacts"
 ```
 
-This copies only `data/raw`, `data/normalized` and the supplied fitted feature
-artifacts. Features, rating state, serving snapshots and replays are rebuilt.
+This copies only `data/raw`, `data/normalized` and the fitted feature
+artifacts provided to the new environment. Features, rating state, serving snapshots and replays are rebuilt.
 
 ## 1. Acquire the EPL 2025/26 season
 
@@ -191,7 +192,6 @@ Acquisition commands display overall progress, elapsed time, ETA, current match 
 
 ## 2. Install the feature-model artifacts
 
-
 ```text
 models/features/
 ├── goal_probability/xpv_action_v1/{metadata.json,model.json}
@@ -200,7 +200,6 @@ models/features/
 ├── xgot/xgot_shot_v1/{metadata.json,metadata.joblib,model.joblib}
 └── xthreat/xt_action_v1/{metadata.json,model.json}
 ```
-
 
 ```bash
 uv run mvp enrichment score-season \
@@ -284,12 +283,32 @@ uv run mvp database load --competition EPL --season 2025-2026
 
 ## Post-match rating model
 
-`post_match_v2` retains the supplied rating-v3 feature and position logic while using a more conservative final calibration. Counting statistics use a 30–90 minute denominator and log-per-90 transforms. Open-play progressive passes use the notebook's zone-aware 28.6/14.3/9.5 thresholds and count completed passes only. Features are standardized by season and position and clipped to control outliers. Forwards, midfielders and defenders use different transparent weights over threat, creation, progression, retention, attacking xPV, defensive prevention and finishing. Goalkeepers use goals prevented and save percentage from shots assigned to the keeper actually on the pitch; own goals are excluded from the shot-stopping sample.
+`post_match_v2` converts event-derived performance metrics into a position-aware
+1–10 match rating.
 
-The final composite uses minutes reliability and a bounded hyperbolic-tangent conversion centered at 6. V2 maps a `z=2.5` composite to about `8.1`, rather than about `9.1`, and applies only a small residual decisive-action bonus because goals and assists already affect finishing, creation and xPV. Explicit penalties remain for cards, missed big chances and own goals. The canonical output column is `post_match_rating`.
+Counting features are adjusted for playing time with bounded minute
+denominators and log-per-90 transforms. Progressive passes are counted only when
+completed and use zone-dependent distance thresholds. Each feature is
+standardized within season and position, then clipped to reduce the effect of
+extreme outliers.
 
-See `docs/rating-model.md` for the component weights, fit/apply boundary and known assumptions.
+The component weights differ by position:
 
+- forwards emphasize shot threat, finishing, creation and attacking xPV;
+- midfielders emphasize creation, progression, retention and two-way value;
+- defenders emphasize progression, retention and defensive threat prevention;
+- goalkeepers use save percentage and goals prevented from shots faced while on
+  the pitch.
+
+The component score is adjusted for minute reliability and converted to the
+final scale with a bounded hyperbolic-tangent function centered at 6. Goals and
+assists receive only a small additional bonus because their effect is already
+captured by finishing, creation and xPV. Cards, own goals and missed big chances
+apply explicit penalties.
+
+The canonical output column is `post_match_rating`. Component definitions,
+weights and fit/apply behavior are documented in
+[`docs/rating-model.md`](docs/rating-model.md).
 ## Entity resolution
 
 Automatic mappings are accepted only when the normalized name is unique in both sources. Missing and ambiguous candidates are written to:
@@ -311,66 +330,65 @@ uv run mvp entities build-player-mapping \
   --manual-overrides config/player_mapping_overrides.csv
 ```
 
-The resulting crosswalk is validated as one-to-one in both directions. The system deliberately does not fuzzy-match uncertain players silently.
+The resulting crosswalk is validated as one-to-one in both directions. Uncertain aliases, shortened names and duplicate normalized names are sent to the review queue instead of being accepted through an unsafe fuzzy match.
 
+## Valuation model
 
-## Modeling rationale
-
-The valuation target is the log change between consecutive Transfermarkt
-observations:
+The target is the log change between consecutive Transfermarkt observations:
 
 ```text
-log(current market value / previous market value)
+log(current_market_value / previous_market_value)
 ```
 
-A hierarchical Bayesian linear regression was selected because football data
-has clear nested structure. Players operate in different positions, and the
-effect of age or recent form is not expected to be identical for a goalkeeper,
-defender, midfielder and forward.
+Only performances strictly after the previous valuation and on or before the
+next valuation cutoff enter an interval. This chronological boundary prevents
+future match information from leaking into earlier training examples.
 
-The model contains:
+### Feature set
 
-- global feature effects shared across all players;
+The model combines:
+
+- previous market value and previous value change;
+- age, age squared and valuation-interval controls;
+- minutes, appearances and start share;
+- average, recency-weighted and rolling player ratings;
+- recent trend and rating volatility;
+- position-aware threat, creation, progression, retention, attacking xPV,
+  defensive and finishing components;
+- goals, assists and other attacking outcome rates.
+
+WhoScored event data is enriched with xG, xGOT, xA, xT and xPV so the valuation
+signal is not driven only by goals and assists. These features capture the
+quality of the chances a player creates, takes or prevents, as well as ball
+progression and possession value.
+
+### Model structure
+
+The primary estimator is a hierarchical Bayesian Student-t regression. Football
+data has a natural hierarchy: players belong to position groups, and the effect
+of age or form is not expected to be identical for a goalkeeper, defender,
+midfielder and forward.
+
+The model includes:
+
+- global feature effects shared across players;
 - position-specific intercepts;
-- position-specific age effects;
-- position-specific recent-form effects;
-- partially pooled player effects;
-- a Student-t likelihood to reduce sensitivity to unusually large valuation
-  updates.
+- position-specific age and form effects;
+- partially pooled player intercepts;
+- a Student-t likelihood for robustness to unusually large valuation changes.
 
-Partial pooling lets players with substantial history develop an individual
-effect while shrinking players with limited data toward the position and
-population averages. Players not observed during training receive a zero player
-effect rather than an unreliable extrapolated effect.
+Partial pooling allows players with sufficient history to develop an individual
+effect while shrinking limited-data players toward their position and the wider
+population. A player not observed during training receives a zero player effect.
 
-WhoScored event data is enriched with expected goals (xG), expected goals on
-target (xGOT), expected assists (xA), expected threat (xT), expected possession
-value (xPV), progression, ball retention, defensive threat prevention and
-finishing overperformance. Goals, assists and minutes remain available, but the
-model also sees the underlying actions that created or prevented scoring
-opportunities.
+The output contains a median projected value, a 90% posterior predictive range
+and the posterior probability of an increase. It is an estimate of movement
+since the latest published Transfermarkt observation, not a replacement for an
+official valuation.
 
-Recent performance is represented through minutes-weighted valuation-interval
-aggregates, an exponentially weighted form rating, rolling-three and rolling-20
-form, recent trend and position-aware component averages. This gives recent
-matches more influence without discarding longer-term performance history.
+### Final evaluation
 
-The output includes:
-
-- a median projected market value;
-- a 90% posterior predictive range;
-- the probability that value has increased;
-- a direction and confidence indicator.
-
-The estimate is not intended to replace an official Transfermarkt valuation. It
-is a model-based estimate of how value may have moved after the latest published
-observation.
-
-## Final model evaluation
-
-The final model was evaluated on a chronological holdout rather than a random
-split. This prevents later valuation observations from being mixed into the
-training sample.
+The final model was evaluated on a chronological holdout.
 
 | Metric | Result |
 |---|---:|
@@ -386,31 +404,21 @@ training sample.
 | OLS MAE | 0.1352 |
 | Zero-change baseline MAE | 0.1658 |
 
-The Bayesian model was promoted because it produced lower holdout MAE than both
-OLS and the zero-change baseline, retained stronger rank correlation and
-provided calibrated predictive uncertainty.
+The Bayesian candidate was promoted because it beat both the OLS and zero-change
+baselines on holdout MAE, retained strong rank correlation and passed the
+coverage and sampler-diagnostic gates.
 
-A forecast can decrease even when a player has had a reasonable season. The
-model forecasts marginal movement from the player's existing valuation, not
-absolute football ability. Age, previous valuation, recent form and the fact
-that an already highly valued player has less room for further appreciation can
-all produce a flat or declining estimate.
+A projection can decline even after a reasonable season. The model estimates
+marginal movement from the player's current valuation rather than absolute
+football ability. Age, prior valuation, recent form and limited upside at the
+top of the market can all contribute to a flat or negative estimate.
 
-## Valuation model
+### Training
 
-The target is the log change between consecutive Transfermarkt observations:
-
-```text
-log(current_market_value / previous_market_value)
-```
-
-Only matches strictly inside a valuation interval enter its performance aggregates, preventing leakage. Features reproduce the successful notebook specification: prior value/change, age and age squared, interval/calendar controls, minutes, appearances, start share, average and recency-weighted ratings, last-90-day rating/trend, rating volatility, position-aware rating components and attacking outcome rates.
-
-The default ratings input is the competition directory, so every available
-`season=*/player_match_ratings.parquet` partition is loaded. The final training
-run used the available EPL performance history from 2018/19 through 2025/26.
-Older seasons increase repeated observations per player and expose the model to
-a broader set of valuation regimes.
+Every available
+`data/features/ratings/competition=EPL/season=*/player_match_ratings.parquet`
+partition is loaded. The final run used EPL performance history from 2018/19
+through 2025/26.
 
 ```bash
 for season in \
@@ -451,10 +459,13 @@ uv run mvp model train \
   --target-accept 0.95
 ```
 
-The primary estimator is the notebook's hierarchical Bayesian Student-t regression: global shrinkage, position intercepts, position-specific age/form adjustments and player-level partially pooled intercepts. Unseen players receive a zero player effect. It returns a median/mean estimate, a 90% predictive interval and the probability of an increase. OLS with HC3 errors and simple baselines are evaluated on the same chronological holdout. A candidate is promoted only when it beats the zero-change and OLS baselines and passes R², coverage and sampler-diagnostic gates; failed candidates remain inspectable without replacing `active.json`.
+A candidate updates `active.json` only after passing the promotion checks.
+Failed candidates remain versioned and inspectable.
 
-When new matches arrive but no new valuation label exists, rebuild current
-features and score the saved active model without retraining:
+### Current scoring
+
+When new matches arrive without a new Transfermarkt label, current player
+features can be rebuilt and scored with the active model without retraining:
 
 ```bash
 uv run mvp model build-current-features \
@@ -470,15 +481,12 @@ uv run mvp model score \
   --output data/serving/player_valuation_predictions.parquet
 ```
 
-The scoring date should follow the latest eligible domestic match. A player
-needs match minutes after their latest published valuation to receive a new live
-forecast.
+A player needs eligible domestic match minutes after their latest published
+valuation to receive a current forecast. Retraining is appropriate when a new
+Transfermarkt observation closes another labeled interval.
+## Continuous-update replay
 
-Retraining is appropriate when a new Transfermarkt valuation closes another labeled interval.
-
-## Eight-match continuous-update replay
-
-Use real historical matches for the demo instead of mock values:
+The replay command simulates incremental operation with completed historical matches:
 
 ```bash
 uv run mvp pipeline replay \
@@ -487,7 +495,7 @@ uv run mvp pipeline replay \
   --matches 8
 ```
 
-Or select one player's latest eight appearances:
+A player-specific replay can be run over the latest eight appearances:
 
 ```bash
 uv run mvp pipeline replay \
@@ -499,7 +507,7 @@ uv run mvp pipeline replay \
   --mapping data/normalized/entity_resolution/player_mapping_exact.parquet
 ```
 
-The replay processes matches oldest-to-newest in an isolated directory, enriches each match, scores native ratings and refreshes player form after every step. A `--prepare-only` replay deliberately reports `pending_rating_model` because it does not load feature/rating artifacts. Full replay rating rows report `succeeded`.
+The replay processes matches from oldest to newest in an isolated directory. Each step enriches one match, scores player ratings and refreshes rolling form. `--prepare-only` validates the replay inputs without loading the fitted rating artifacts and therefore records `pending_rating_model`; a full replay records `succeeded` for completed rating steps.
 
 When the command receives valuations, an approved mapping and a requested valuation model, it also builds current valuation features after each match and writes a new estimate, 90% range, direction probability and—when a player is selected—the change from the previous replay step. Without all three inputs it reports `skipped_missing_inputs`. Selected-player replay deltas are published to the serving match-impact table; rerun the database load afterward when the API uses PostgreSQL.
 
@@ -521,7 +529,7 @@ In Docker, the API reads PostgreSQL. Without `DATABASE_URL`, it falls back to th
 
 ## Data-source decisions and limitations
 
-WhoScored was selected for rich player-level match events and because the existing scraper could be made incremental at match grain. Transfermarkt was selected for dated player market-value histories and broad player coverage. Both are public web sources rather than stable contracted APIs, so layouts, identifiers and availability can change. The pipeline retains raw evidence, uses low concurrency/rate limits, validates schemas and fails visibly when required payloads disappear. Operators remain responsible for the sources' terms and permitted use.
+WhoScored was selected for rich player-level match events and because the existing scraper could be made incremental at match grain. Transfermarkt was selected for dated player market-value histories and broad player coverage. Both are public web sources rather than stable contracted APIs, so layouts, identifiers and availability can change. The pipeline retains raw evidence, uses low concurrency/rate limits, validates schemas and fails visibly when required payloads disappear. Use of each source remains subject to its terms and permitted-use requirements.
 
 FBref and Understat were considered but not used in the primary pipeline: they would add another identifier space, do not replace Transfermarkt's historical valuation target and overlap with the event-derived metrics already available here. Proprietary feeds would improve identity stability, injury/context features, goalkeeper event attribution and legally supported continuous delivery.
 
@@ -546,7 +554,7 @@ Known limitations:
 - fitted model artifacts must only be distributed when their license or
   ownership permits it.
 
-## What I would improve with more time
+## Future improvements
 
 - strengthen entity resolution with aliases, date of birth, club and position
   evidence while preserving a manual review path;
