@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.repository import build_repository, read_metadata
+from api.profile_store import ProfileStore
 
 app = FastAPI(title="Market Value Pulse API", version="0.6.0")
 app.add_middleware(
@@ -13,6 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 repository = build_repository()
+profile_store = ProfileStore()
 
 
 @app.get("/health")
@@ -32,6 +34,23 @@ def player(player_id: str) -> dict[str, object]:
     if row is None:
         raise HTTPException(status_code=404, detail="Player not found")
     return {"data": row}
+
+
+@app.get("/api/players/{player_id}/profile")
+def player_profile(player_id: str) -> dict[str, object]:
+    row = profile_store.player_profile(player_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+    return {"data": row}
+
+
+@app.get("/api/players/{player_id}/similar-players")
+def similar_players(player_id: str, limit: int = 10) -> dict[str, object]:
+    rows = profile_store.similar_players(
+        player_id,
+        limit=max(1, min(limit, 25)),
+    )
+    return {"data": rows, "count": len(rows)}
 
 
 @app.get("/api/catalog")

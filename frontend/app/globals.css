@@ -336,3 +336,437 @@ h2, h3, p { margin-top: 0; }
   .ratingStrip { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; }
   .ratingStrip > div { padding: 6px 1px; }
 }
+
+
+/* PLAYER STORY REFRESH START */
+
+:root {
+  --canvas: #f1f3f0;
+  --surface: #ffffff;
+  --surface-soft: #f7f9f7;
+  --line: #dce2de;
+  --line-strong: #c7d0cb;
+  --shadow: 0 12px 30px rgba(25, 42, 35, .065);
+}
+
+.content {
+  width: min(100%, 1380px);
+  padding-top: 30px;
+}
+
+.playerHeader {
+  margin-bottom: 24px;
+  padding: 17px 19px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(25, 42, 35, .04);
+}
+
+.storyChapter {
+  margin-top: 28px;
+}
+
+.playerHeader + .storyChapter {
+  margin-top: 0;
+}
+
+.chapterHeader {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  margin-bottom: 13px;
+}
+
+.chapterHeader > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cbd7d2;
+  border-radius: 12px;
+  background: #e8efeb;
+  color: #285f50;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.chapterHeader h2 {
+  margin: 2px 0 0;
+  font-size: 21px;
+  letter-spacing: -.03em;
+}
+
+.chapterHeader p:not(.label) {
+  margin: 4px 0 0;
+  color: var(--ink-faint);
+  font-size: 11px;
+}
+
+.outlookGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr);
+  gap: 16px;
+}
+
+.outlookCard {
+  min-width: 0;
+  padding: 23px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.outlookCardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.outlookCardHead h3 {
+  margin: 4px 0 0;
+  font-size: 16px;
+  letter-spacing: -.02em;
+}
+
+.valuationHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.valuationMetric {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.valuationMetric > span {
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.valuationMetric strong {
+  font-size: clamp(29px, 3.1vw, 42px);
+  line-height: 1;
+  letter-spacing: -.055em;
+  white-space: nowrap;
+}
+
+.valuationMetric small {
+  min-height: 18px;
+  color: var(--ink-faint);
+  font-size: 9px;
+}
+
+.projectedMetric strong {
+  color: var(--blue);
+}
+
+.valuationTransition {
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  color: var(--ink-faint);
+}
+
+.valuationTransition .valueArrow {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface-soft);
+}
+
+.valuationTransition b {
+  font-size: 10px;
+}
+
+.rangeStrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 21px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: var(--blue-soft);
+}
+
+.rangeStrip span {
+  color: #596b9f;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.rangeStrip b {
+  color: #233f9b;
+  font-size: 13px;
+}
+
+.probabilityMeter {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.probabilityMeter > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.probabilityMeter > div b {
+  color: var(--ink);
+}
+
+.probabilityMeter > span {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7ebe8;
+}
+
+.probabilityMeter > span i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3157d5, #27977f);
+}
+
+.formHero {
+  display: grid;
+  grid-template-columns: minmax(140px, .8fr) minmax(0, 1.2fr);
+  align-items: end;
+  gap: 18px;
+  margin-top: 23px;
+}
+
+.formHero .formScore {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0;
+}
+
+.formHero .formScore strong {
+  font-size: 47px;
+}
+
+.formHero .formScore > small {
+  grid-column: 1 / -1;
+  margin-top: 3px;
+  color: var(--ink-faint);
+  font-size: 9px;
+}
+
+.formQuickStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.formQuickStats > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px 9px;
+  border-right: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.formQuickStats > div:last-child {
+  border-right: 0;
+}
+
+.formQuickStats span {
+  color: var(--ink-faint);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.formQuickStats b {
+  font-size: 13px;
+}
+
+.embeddedChart {
+  margin-top: 20px;
+  padding: 13px 13px 5px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.embeddedChartHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 0 2px 2px;
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .03em;
+}
+
+.embeddedChartHead small {
+  color: var(--ink-faint);
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.embeddedChart .marketChart,
+.embeddedChart .formChart {
+  min-width: 500px;
+  margin-top: 5px;
+}
+
+.embeddedChart .chartGrid {
+  stroke: #dfe4e0;
+}
+
+.embeddedChart .actualLine,
+.embeddedChart .formLine {
+  stroke-width: 3.2;
+}
+
+.outlookFootnote {
+  margin: 12px 2px 0;
+  color: var(--ink-faint);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.recentRatingRow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 13px;
+}
+
+.recentRatingRow > div {
+  display: grid;
+  place-items: center;
+  gap: 1px;
+  padding: 7px 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.recentRatingRow span {
+  color: var(--ink-faint);
+  font-size: 8px;
+}
+
+.recentRatingRow b {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.seasonStory > .sectionCard {
+  margin-top: 0;
+}
+
+.matchSection {
+  margin-top: 32px;
+  box-shadow: none;
+}
+
+.matchSection::before {
+  content: "SUPPORTING EVIDENCE";
+  display: block;
+  margin-bottom: 7px;
+  color: var(--green);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .14em;
+}
+
+.explanationGrid {
+  margin-top: 2px;
+}
+
+.explanationGrid .sectionCard,
+.modelDetails {
+  box-shadow: none;
+}
+
+@media (max-width: 1120px) {
+  .outlookGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .chapterHeader {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .chapterHeader > span {
+    width: 32px;
+    height: 32px;
+  }
+
+  .valuationHero,
+  .formHero {
+    grid-template-columns: 1fr;
+  }
+
+  .valuationTransition {
+    display: none;
+  }
+
+  .valuationMetric {
+    padding: 8px 0;
+  }
+
+  .valuationMetric:first-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rangeStrip {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .embeddedChart .marketChart,
+  .embeddedChart .formChart {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 430px) {
+  .outlookCard {
+    padding: 18px;
+  }
+
+  .formQuickStats {
+    grid-template-columns: 1fr;
+  }
+
+  .formQuickStats > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .formQuickStats > div:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* PLAYER STORY REFRESH END */
+

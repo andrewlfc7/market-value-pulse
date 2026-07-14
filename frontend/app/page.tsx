@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PlayerProfileSection from "./components/PlayerProfileSection";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -444,67 +445,138 @@ export default function Home() {
               <button className="watch" onClick={toggleWatchlist}>{watchlist.has(player.player_id) ? "✓ On watchlist" : "+ Add to watchlist"}</button>
             </section>
 
-            <div className="summaryGrid">
-              <article className="summaryCard formSummary">
-                <div className="cardHeading"><div><p className="label">PLAYER FORM</p><h3>Recent domestic performance</h3></div><span className={`statusPill ${trendClass(formTrend)}`}>{formTrend == null ? "Trend unavailable" : formTrend > 0.1 ? "Improving" : formTrend < -0.1 ? "Declining" : "Steady"}</span></div>
-                <div className="formScore"><strong>{player.current_form_rating?.toFixed(2) ?? "—"}</strong><span>/ 10</span></div>
-                <p className="metricContext">90-day, minutes-weighted form rating</p>
-                <div className="formComparisons">
-                  <div><span>Last 3 matches</span><b>{player.rolling_3_match_rating?.toFixed(2) ?? "—"}</b></div>
-                  <div><span>Last 20 matches</span><b>{player.rolling_20_match_rating?.toFixed(2) ?? "—"}</b></div>
-                  <div><span>Recent trend</span><b className={trendClass(formTrend)}>{formTrend == null ? "—" : `${formTrend >= 0 ? "+" : ""}${formTrend.toFixed(2)}`}</b></div>
+            <section className="storyChapter">
+              <div className="chapterHeader">
+                <span>01</span>
+                <div>
+                  <p className="label">CURRENT OUTLOOK</p>
+                  <h2>Value and recent form</h2>
+                  <p>The observed market baseline, the model forecast and the performances currently driving the outlook.</p>
                 </div>
-                <div className="ratingStrip" aria-label="Last five match ratings">
-                  {recentFive.length ? [...recentFive].reverse().map((match) => (
-                    <div key={match.match_id} className={trendClass(match.rating - 6)} title={`${fullDate(match.match_datetime)} · ${match.explanation ?? "Position-adjusted performance"}`}>
-                      <span>{shortDate(match.match_datetime)}</span><b>{match.rating.toFixed(1)}</b>
+              </div>
+
+              <div className="outlookGrid">
+                <article className="outlookCard valuationOutlook">
+                  <div className="outlookCardHead">
+                    <div>
+                      <p className="label">MARKET VALUE</p>
+                      <h3>Published value and model projection</h3>
                     </div>
-                  )) : <span className="muted">No recent rated matches</span>}
-                </div>
-              </article>
-
-              <article className="summaryCard valueSummary">
-                <div className="cardHeading"><div><p className="label">MARKET VALUE FORECAST</p><h3>Published value and model outlook</h3></div>{projectionAvailable && <span className={`statusPill ${direction}`}>{directionCopy(direction)}</span>}</div>
-                <div className="valueComparison">
-                  <div className="publishedValue">
-                    <span>Latest Transfermarkt valuation</span>
-                    <strong>{money(player.current_market_value_eur)}</strong>
-                    <small>Published {fullDate(player.latest_valuation_date)}</small>
+                    {projectionAvailable && <span className={`statusPill ${direction}`}>{directionCopy(direction)}</span>}
                   </div>
-                  <div className="valueArrow"><ArrowIcon direction={projectedChange == null ? "right" : projectedChange >= 0 ? "up" : "down"} /></div>
-                  <div className="projectedValue">
-                    <span>Projected market value</span>
-                    <strong>{money(player.estimated_value_eur)}</strong>
-                    {projectionAvailable ? <small className={trendClass(projectedChange)}>{projectedDelta == null ? "" : `${projectedDelta >= 0 ? "+" : ""}${money(projectedDelta)} · `}{signedPercent(projectedChange)}</small> : <small>Awaiting eligible match data and an active model</small>}
+
+                  <div className="valuationHero">
+                    <div className="valuationMetric">
+                      <span>Latest Transfermarkt value</span>
+                      <strong>{money(player.current_market_value_eur)}</strong>
+                      <small>Published {fullDate(player.latest_valuation_date)}</small>
+                    </div>
+
+                    <div className="valuationTransition">
+                      <div className="valueArrow"><ArrowIcon direction={projectedChange == null ? "right" : projectedChange >= 0 ? "up" : "down"} /></div>
+                      <b className={trendClass(projectedChange)}>{signedPercent(projectedChange)}</b>
+                    </div>
+
+                    <div className="valuationMetric projectedMetric">
+                      <span>Model projection</span>
+                      <strong>{money(player.estimated_value_eur)}</strong>
+                      <small className={trendClass(projectedChange)}>
+                        {projectedDelta == null ? "Awaiting projected delta" : `${projectedDelta >= 0 ? "+" : ""}${money(projectedDelta)} from the published baseline`}
+                      </small>
+                    </div>
                   </div>
+
+                  {projectionAvailable ? (
+                    <>
+                      <div className="rangeStrip">
+                        <span>90% projected range</span>
+                        <b>{money(player.estimated_lower_eur)} — {money(player.estimated_upper_eur)}</b>
+                      </div>
+                      <div className="probabilityMeter">
+                        <div>
+                          <span>Probability of an increase</span>
+                          <b>{player.probability_value_increase == null ? "—" : `${Math.round(player.probability_value_increase * 100)}%`}</b>
+                        </div>
+                        <span><i style={{ width: `${Math.max(0, Math.min(100, Math.round((player.probability_value_increase ?? 0) * 100)))}%` }} /></span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="noProjection"><b>No current projection</b><span>A projection appears after eligible EPL match data is scored with an active valuation model.</span></div>
+                  )}
+
+                  <div className="embeddedChart">
+                    <div className="embeddedChartHead">
+                      <span>Valuation trajectory</span>
+                      <div className="legend"><span><i className="actualLegend" /> Published</span><span><i className="forecastLegend" /> Projection</span></div>
+                    </div>
+                    <MarketValueChart history={latestHistory} projection={player.estimated_value_eur} lower={player.estimated_lower_eur} upper={player.estimated_upper_eur} />
+                  </div>
+
+                  <p className="outlookFootnote">The projection is not a new Transfermarkt valuation. It estimates current value from eligible domestic EPL performances after the latest published observation.</p>
+                </article>
+
+                <article className="outlookCard formOutlook">
+                  <div className="outlookCardHead">
+                    <div>
+                      <p className="label">PLAYER FORM</p>
+                      <h3>Recent domestic performance</h3>
+                    </div>
+                    <span className={`statusPill ${trendClass(formTrend)}`}>{formTrend == null ? "Trend unavailable" : formTrend > 0.1 ? "Improving" : formTrend < -0.1 ? "Declining" : "Steady"}</span>
+                  </div>
+
+                  <div className="formHero">
+                    <div className="formScore">
+                      <strong>{player.current_form_rating?.toFixed(2) ?? "—"}</strong>
+                      <span>/ 10</span>
+                      <small>90-day minutes-weighted form</small>
+                    </div>
+
+                    <div className="formQuickStats">
+                      <div><span>Last 3</span><b>{player.rolling_3_match_rating?.toFixed(2) ?? "—"}</b></div>
+                      <div><span>Last 20</span><b>{player.rolling_20_match_rating?.toFixed(2) ?? "—"}</b></div>
+                      <div><span>Trend</span><b className={trendClass(formTrend)}>{formTrend == null ? "—" : `${formTrend >= 0 ? "+" : ""}${formTrend.toFixed(2)}`}</b></div>
+                    </div>
+                  </div>
+
+                  <div className="embeddedChart formEmbeddedChart">
+                    <div className="embeddedChartHead">
+                      <span>Last 10 rated appearances</span>
+                      <small>6.0 is the neutral baseline</small>
+                    </div>
+                    <FormChart matches={recentMatches} />
+                  </div>
+
+                  <div className="recentRatingRow" aria-label="Last five match ratings">
+                    {recentFive.length ? [...recentFive].reverse().map((match) => (
+                      <div key={match.match_id} className={trendClass(match.rating - 6)} title={`${fullDate(match.match_datetime)} · ${match.explanation ?? "Position-adjusted performance"}`}>
+                        <span>{shortDate(match.match_datetime)}</span>
+                        <b>{match.rating.toFixed(1)}</b>
+                      </div>
+                    )) : <span className="muted">No recent rated matches</span>}
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section className="storyChapter seasonStory">
+              <div className="chapterHeader">
+                <span>02</span>
+                <div>
+                  <p className="label">SEASON PERFORMANCE</p>
+                  <h2>What type of player is he this season?</h2>
+                  <p>Role-relative output across the full season, separated from short-term form and market-value forecasting.</p>
                 </div>
-                {projectionAvailable ? (
-                  <>
-                    <div className="rangeBlock"><span>90% projected range</span><b>{money(player.estimated_lower_eur)} — {money(player.estimated_upper_eur)}</b></div>
-                    <p className="probabilityCopy">The model estimates a <b>{player.probability_value_increase == null ? "—" : `${Math.round(player.probability_value_increase * 100)}% chance`}</b> that the player&apos;s value has increased since the latest published valuation.</p>
-                  </>
-                ) : (
-                  <div className="noProjection"><b>No current projection</b><span>A projection appears after eligible EPL match data is scored with an active valuation model.</span></div>
-                )}
-              </article>
-            </div>
-
-            <article className="sectionCard wide">
-              <div className="articleHead">
-                <div><p className="label">MARKET VALUE</p><h3>Published valuation history and current projection</h3><p>Actual Transfermarkt observations are shown separately from the model forecast.</p></div>
-                <div className="legend"><span><i className="actualLegend" /> Transfermarkt valuation</span><span><i className="forecastLegend" /> Model projection</span><span><i className="rangeLegend" /> 90% range</span></div>
               </div>
-              <MarketValueChart history={latestHistory} projection={player.estimated_value_eur} lower={player.estimated_lower_eur} upper={player.estimated_upper_eur} />
-              <div className="chartNote">The projection is not a new Transfermarkt valuation. It estimates the player&apos;s value from eligible domestic EPL performances after the latest published observation.</div>
-            </article>
 
-            <article className="sectionCard wide">
-              <div className="articleHead">
-                <div><p className="label">PLAYER FORM</p><h3>Recent match performance</h3><p>Position-adjusted ratings are shown on their own 1–10 scale.</p></div>
-                <div className="formBenchmarks"><span>Last 3 <b>{player.rolling_3_match_rating?.toFixed(2) ?? "—"}</b></span><span>Last 20 <b>{player.rolling_20_match_rating?.toFixed(2) ?? "—"}</b></span></div>
-              </div>
-              <FormChart matches={recentMatches} />
-            </article>
+              <PlayerProfileSection
+                playerId={player.player_id}
+                onSelectPlayer={(playerId) => {
+                  setSelectedId(playerId);
+                  setView("player");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              />
+            </section>
 
             <article className="sectionCard wide matchSection">
               <div className="articleHead"><div><p className="label">RECENT MATCH DRIVERS</p><h3>What shaped the player&apos;s form signal</h3><p>Component explanations show why each performance rated above or below the 6.0 baseline.</p></div><span className="method">Euro deltas appear only when replay-scored</span></div>

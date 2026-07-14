@@ -48,6 +48,7 @@ mvp = "cli:app"
 packages = [
   "src/ingestion",
   "src/features",
+  "src/profiles",
   "src/entity_resolution",
   "src/serving",
   "src/database",
