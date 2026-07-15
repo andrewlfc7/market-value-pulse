@@ -1,0 +1,1045 @@
+.playerHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  margin-bottom: 28px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #294239;
+  border-radius: 50%;
+  background: #10231c;
+  color: #f5faf7;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.identity {
+  min-width: 0;
+}
+
+.identityLine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.identityLine h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 22px;
+  letter-spacing: -.03em;
+}
+
+.identityLine > span {
+  padding: 4px 8px;
+  border: 1px solid #2d3a35;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.identity p {
+  margin: 4px 0 0;
+  color: var(--ink-faint);
+  font-size: 11px;
+}
+
+.identity p i {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 8px 2px;
+  border-radius: 50%;
+  background: #53605a;
+}
+
+.watchButton {
+  margin-left: auto;
+  padding: 10px 13px;
+  border: 1px solid #35443e;
+  border-radius: 10px;
+  background: #18211d;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.watchButton:hover {
+  border-color: var(--green);
+  color: var(--green-bright);
+}
+
+.chapter {
+  margin-top: 34px;
+}
+
+.chapterHeader {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: start;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.chapterHeader > span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #33463e;
+  border-radius: 13px;
+  background: #14221c;
+  color: #74d5b1;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.chapterHeader h2,
+.supportingHeader h2 {
+  margin: 3px 0 0;
+  color: var(--ink);
+  font-size: 22px;
+  letter-spacing: -.03em;
+}
+
+.chapterHeader p:not(:global(.label)) {
+  margin: 4px 0 0;
+  color: var(--ink-faint);
+  font-size: 11px;
+}
+
+.outlookGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(330px, .82fr);
+  gap: 18px;
+}
+
+.card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.valuationCard,
+.formCard {
+  padding: 25px;
+}
+
+.cardHead,
+.recentChartHead,
+.embeddedChartHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.cardHead h3,
+.recentChartHead h3 {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-size: 17px;
+  letter-spacing: -.02em;
+}
+
+.statusPill {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid #37423d;
+  border-radius: 999px;
+  background: #1b2420;
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.positive {
+  color: var(--green-bright) !important;
+}
+
+.negative {
+  color: var(--red-bright) !important;
+}
+
+.neutral {
+  color: var(--amber-bright) !important;
+}
+
+.statusPill.positive {
+  border-color: rgba(53, 198, 155, .28);
+  background: rgba(53, 198, 155, .1);
+}
+
+.statusPill.negative {
+  border-color: rgba(239, 106, 91, .26);
+  background: rgba(239, 106, 91, .1);
+}
+
+.statusPill.neutral {
+  border-color: rgba(215, 167, 71, .26);
+  background: rgba(215, 167, 71, .1);
+}
+
+.valuationHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.valueMetric {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.valueMetric > span {
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.valueMetric strong {
+  color: var(--ink);
+  font-size: clamp(38px, 4vw, 54px);
+  line-height: .98;
+  letter-spacing: -.06em;
+  white-space: nowrap;
+}
+
+.valueMetric small {
+  min-height: 18px;
+  color: var(--ink-faint);
+  font-size: 9px;
+}
+
+.projectedValue strong {
+  color: var(--blue-bright);
+}
+
+.valueTransition {
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  color: var(--ink-faint);
+}
+
+.valueTransition > div {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #35423c;
+  border-radius: 50%;
+  background: var(--surface-raised);
+}
+
+.valueTransition svg {
+  width: 22px;
+  height: 22px;
+}
+
+.valueTransition path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.valueTransition b {
+  font-size: 10px;
+}
+
+.forecastBlock {
+  margin-top: 26px;
+  padding: 16px;
+  border: 1px solid #27332e;
+  border-radius: 13px;
+  background: var(--surface-raised);
+}
+
+.rangeLabels,
+.rangeCaptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+}
+
+.rangeLabels span,
+.rangeLabels b {
+  font-size: 10px;
+}
+
+.rangeLabels span:last-child,
+.rangeCaptions span:last-child {
+  text-align: right;
+}
+
+.rangeLabels b,
+.rangeCaptions span:nth-child(2) {
+  text-align: center;
+}
+
+.rangeLabels b {
+  color: var(--blue-bright);
+  font-size: 12px;
+}
+
+.rangeLabels span {
+  color: var(--ink-soft);
+}
+
+.rangeTrack {
+  position: relative;
+  height: 7px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4f638e, #718cff);
+}
+
+.rangeTrack::before,
+.rangeTrack::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 15px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: #95a7e8;
+}
+
+.rangeTrack::before {
+  left: 0;
+}
+
+.rangeTrack::after {
+  right: 0;
+}
+
+.rangeEstimate {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 2px solid #b9c7ff;
+  border-radius: 2px;
+  background: #6687ff;
+}
+
+.rangeCaptions {
+  margin-top: 8px;
+  color: var(--ink-faint);
+  font-size: 8px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.probabilityRow {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.probabilityRow > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.probabilityRow > div b {
+  color: var(--ink);
+}
+
+.probabilityTrack {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #27302c;
+}
+
+.probabilityTrack i {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: inherit;
+  background: var(--green-bright);
+}
+
+.noProjection {
+  display: grid;
+  gap: 4px;
+  margin-top: 25px;
+  padding: 15px;
+  border: 1px solid #2b3531;
+  border-radius: 12px;
+  background: var(--surface-raised);
+}
+
+.noProjection b {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.noProjection span {
+  color: var(--ink-faint);
+  font-size: 10px;
+}
+
+.embeddedChart {
+  margin-top: 22px;
+  padding: 15px 14px 7px;
+  overflow: hidden;
+  border: 1px solid #29342f;
+  border-radius: 14px;
+  background: #101613;
+}
+
+.embeddedChartHead {
+  align-items: center;
+  padding: 0 3px;
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .03em;
+}
+
+.embeddedChartHead > div {
+  display: flex;
+  gap: 13px;
+}
+
+.embeddedChartHead > div span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.actualLegend {
+  width: 18px;
+  height: 3px;
+  display: inline-block;
+  border-radius: 3px;
+  background: var(--green-bright);
+}
+
+.forecastLegend {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  transform: rotate(45deg);
+  border: 2px solid var(--blue-bright);
+  background: transparent;
+}
+
+.chartWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.marketChart,
+.formChart {
+  width: 100%;
+  min-width: 650px;
+  height: auto;
+}
+
+.chartGrid {
+  stroke: #27312d;
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+}
+
+.chartTick,
+.chartDate {
+  fill: #74817b;
+  font-size: 9px;
+}
+
+.chartArea {
+  fill: url(#darkValueArea);
+}
+
+.actualLine {
+  fill: none;
+  stroke: var(--green-bright);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.actualDot {
+  fill: #101613;
+  stroke: var(--green-bright);
+  stroke-width: 3;
+}
+
+.forecastLine {
+  fill: none;
+  stroke: var(--blue-bright);
+  stroke-width: 2.5;
+  stroke-dasharray: 7 7;
+}
+
+.forecastDot {
+  fill: #101613;
+  stroke: var(--blue-bright);
+  stroke-width: 2.5;
+}
+
+.intervalLine,
+.intervalCap {
+  stroke: #8297df;
+  stroke-width: 3;
+}
+
+.forecastDate {
+  fill: var(--blue-bright);
+  font-weight: 750;
+}
+
+.formHero {
+  margin-top: 30px;
+}
+
+.formScore {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.formScore strong {
+  color: var(--ink);
+  font-size: clamp(58px, 6vw, 78px);
+  line-height: .92;
+  letter-spacing: -.065em;
+}
+
+.formScore > span {
+  color: var(--ink-faint);
+  font-size: 14px;
+}
+
+.formScore small {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  color: var(--ink-faint);
+  font-size: 10px;
+}
+
+.formScale {
+  margin-top: 28px;
+}
+
+.formScaleTrack {
+  position: relative;
+  height: 9px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #b8544b 0%,
+    #d3a848 48%,
+    #3bb990 100%
+  );
+}
+
+.formScaleTrack i {
+  position: absolute;
+  top: 50%;
+  width: 17px;
+  height: 17px;
+  transform: translate(-50%, -50%);
+  border: 3px solid #f3f7f4;
+  border-radius: 50%;
+  background: #111713;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .08);
+}
+
+.formScale > div:last-child {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  color: var(--ink-faint);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.formStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  margin-top: 26px;
+  border: 1px solid #2c3732;
+  border-radius: 12px;
+}
+
+.formStats > div {
+  display: grid;
+  gap: 4px;
+  padding: 15px 13px;
+  border-right: 1px solid #2c3732;
+  background: var(--surface-raised);
+}
+
+.formStats > div:last-child {
+  border-right: 0;
+}
+
+.formStats span {
+  color: var(--ink-faint);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.formStats b {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.formInterpretation {
+  display: grid;
+  gap: 5px;
+  margin-top: 22px;
+  padding: 17px;
+  border-left: 3px solid var(--green);
+  border-radius: 0 10px 10px 0;
+  background: #111b17;
+}
+
+.formInterpretation > span {
+  color: var(--green-bright);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.formInterpretation strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.formInterpretation p {
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: 10px;
+}
+
+.recentCard {
+  padding: 25px;
+}
+
+.recentChartHead {
+  align-items: center;
+}
+
+.recentChartHead > span {
+  color: var(--ink-faint);
+  font-size: 9px;
+}
+
+.recentCard .formChart {
+  margin-top: 14px;
+}
+
+.formLine {
+  fill: none;
+  stroke: #d7e1dc;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.formDot {
+  stroke: #101613;
+  stroke-width: 3;
+}
+
+.formDot.positive {
+  fill: var(--green-bright);
+}
+
+.formDot.negative {
+  fill: var(--red-bright);
+}
+
+.formDot.neutral {
+  fill: var(--amber-bright);
+}
+
+.baselineLine {
+  stroke: #56635d;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 6;
+}
+
+.baselineLabel {
+  fill: #84918b;
+  font-size: 9px;
+}
+
+.appearanceGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.appearanceCard {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #2d3833;
+  border-top: 3px solid #8e9a94;
+  border-radius: 11px;
+  background: var(--surface-raised);
+}
+
+.appearanceCard.positive {
+  border-top-color: var(--green-bright);
+}
+
+.appearanceCard.negative {
+  border-top-color: var(--red-bright);
+}
+
+.appearanceCard.neutral {
+  border-top-color: var(--amber-bright);
+}
+
+.appearanceCard > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.appearanceCard > div span {
+  color: var(--ink-faint);
+  font-size: 9px;
+}
+
+.appearanceCard > div b {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.appearanceCard > small {
+  color: var(--ink-faint);
+  font-size: 8px;
+}
+
+.appearanceCard p {
+  display: -webkit-box;
+  margin: 9px 0 0;
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 9px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.matchDrivers {
+  margin-top: 20px;
+  overflow: hidden;
+  border: 1px solid #2d3833;
+  border-radius: 12px;
+  background: #111713;
+}
+
+.matchDrivers summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 14px 16px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.matchDrivers summary small {
+  color: var(--ink-faint);
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.matchTable {
+  padding: 0 16px 10px;
+}
+
+.matchTableHead,
+.matchRow {
+  display: grid;
+  grid-template-columns: 1.1fr .55fr 1.8fr .7fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.matchTableHead {
+  padding: 10px 10px 8px;
+  color: var(--ink-faint);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.matchRow {
+  padding: 12px 10px;
+  border-top: 1px solid #29332f;
+}
+
+.matchRow > div {
+  min-width: 0;
+}
+
+.matchRow b {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.matchRow small,
+.ratingCell span,
+.impactCell span {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-faint);
+  font-size: 8px;
+}
+
+.ratingCell b {
+  font-size: 14px;
+}
+
+.driverCopy {
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.impactCell {
+  text-align: right;
+}
+
+.impactCell b {
+  font-size: 13px;
+}
+
+.impactCell span {
+  text-transform: capitalize;
+}
+
+.supportingSection {
+  margin-top: 36px;
+}
+
+.supportingHeader {
+  margin-bottom: 14px;
+}
+
+.supportingDetails {
+  display: grid;
+  gap: 9px;
+}
+
+.supportingDetails details {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.supportingDetails summary {
+  padding: 14px 16px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.supportingDetails details > div {
+  padding: 0 16px 16px;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.supportingDetails p {
+  color: var(--ink-soft);
+}
+
+.supportingDetails ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
+.supportingDetails li {
+  margin: 5px 0;
+}
+
+.modelGrid {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content 1fr;
+  gap: 9px 18px;
+  color: var(--ink-faint);
+}
+
+.modelGrid b {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.emptyChart {
+  padding: 30px;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+@media (max-width: 1120px) {
+  .outlookGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formCard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .formCard .cardHead,
+  .formInterpretation {
+    grid-column: 1 / -1;
+  }
+
+  .formStats {
+    align-self: end;
+  }
+}
+
+@media (max-width: 840px) {
+  .appearanceGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .matchTableHead {
+    display: none;
+  }
+
+  .matchRow {
+    grid-template-columns: 1fr auto;
+    gap: 9px 14px;
+  }
+
+  .driverCopy {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .modelGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .playerHeader {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .watchButton {
+    width: 100%;
+    margin: 3px 0 0;
+  }
+
+  .chapterHeader {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .chapterHeader > span {
+    width: 34px;
+    height: 34px;
+  }
+
+  .valuationHero {
+    grid-template-columns: 1fr;
+  }
+
+  .valueTransition {
+    display: none;
+  }
+
+  .valueMetric {
+    padding: 9px 0;
+  }
+
+  .valueMetric:first-child {
+    border-bottom: 1px solid #2d3833;
+  }
+
+  .formCard {
+    display: block;
+  }
+
+  .formStats {
+    margin-top: 22px;
+  }
+
+  .appearanceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketChart,
+  .formChart {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 440px) {
+  .valuationCard,
+  .formCard,
+  .recentCard {
+    padding: 19px;
+  }
+
+  .formStats {
+    grid-template-columns: 1fr;
+  }
+
+  .formStats > div {
+    border-right: 0;
+    border-bottom: 1px solid #2c3732;
+  }
+
+  .formStats > div:last-child {
+    border-bottom: 0;
+  }
+}

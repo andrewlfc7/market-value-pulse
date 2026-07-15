@@ -54,15 +54,26 @@ type Props = {
 };
 
 const PHASE_COLORS: Record<string, string> = {
-  Scoring: "#ef684c",
-  Creation: "#e99a55",
-  Passing: "#c6a83c",
-  Progression: "#299c8e",
-  Defending: "#567ec2",
-  "Shot stopping": "#8768b2",
-  Distribution: "#3f9470",
-  Sweeping: "#6b95a6",
+  Scoring: "#f15e49",
+  Creation: "#f39a3f",
+  Passing: "#d9b44a",
+  Progression: "#2eb4a3",
+  Defending: "#5f89de",
+  "Shot stopping": "#8f6fd0",
+  Distribution: "#4c9f7b",
+  Sweeping: "#6f9bae",
 };
+
+const PHASE_ORDER = [
+  "Scoring",
+  "Creation",
+  "Passing",
+  "Progression",
+  "Defending",
+  "Shot stopping",
+  "Distribution",
+  "Sweeping",
+];
 
 function roleLabel(value?: string | null) {
   if (!value) return "Role unavailable";
@@ -90,23 +101,23 @@ function metricValue(value?: number | null) {
   return numeric.toFixed(2);
 }
 
-function splitLabel(label: string) {
-  const words = label.split(" ");
+function splitLabel(label: string): string[] {
+  const words = label.trim().split(/\s+/);
 
   if (label.length <= 18 || words.length === 1) {
     return [label];
   }
 
   let bestIndex = 1;
-  let smallestDifference = Number.POSITIVE_INFINITY;
+  let bestDifference = Number.POSITIVE_INFINITY;
 
   for (let index = 1; index < words.length; index += 1) {
     const first = words.slice(0, index).join(" ");
     const second = words.slice(index).join(" ");
     const difference = Math.abs(first.length - second.length);
 
-    if (difference < smallestDifference) {
-      smallestDifference = difference;
+    if (difference < bestDifference) {
+      bestDifference = difference;
       bestIndex = index;
     }
   }
@@ -180,26 +191,34 @@ function PizzaChart({ profile }: { profile: ProfileData }) {
   );
 
   const count = metrics.length;
-  const centerX = 450;
-  const centerY = 345;
-  const innerRadius = 68;
-  const outerRadius = 220;
-  const labelRadius = 286;
+  const centerX = 600;
+  const centerY = 520;
+  const innerRadius = 116;
+  const outerRadius = 330;
+  const percentileRadius = outerRadius + 24;
+  const leaderStartRadius = outerRadius + 44;
+  const leaderBendRadius = outerRadius + 76;
+  const labelRadius = outerRadius + 132;
   const step = (Math.PI * 2) / Math.max(count, 1);
   const startOffset = -Math.PI / 2 - step / 2;
 
   return (
     <div className={styles.chartShell}>
+      <div className={styles.chartHeading}>
+        <strong>Same-role EPL percentiles</strong>
+        <span>Percentile rank: 0 is lowest, 100 is highest</span>
+      </div>
+
       <svg
         className={styles.pizza}
-        viewBox="0 0 900 700"
+        viewBox="0 0 1200 1080"
         role="img"
         aria-label={`${profile.player_name ?? "Player"} role-relative performance profile`}
       >
         <circle
           cx={centerX}
           cy={centerY}
-          r={outerRadius + 30}
+          r={outerRadius + 40}
           className={styles.chartBackdrop}
         />
 
@@ -225,11 +244,11 @@ function PizzaChart({ profile }: { profile: ProfileData }) {
 
         {metrics.map((metric, index) => {
           const start =
-            startOffset + index * step + step * 0.04;
+            startOffset + index * step + step * 0.035;
           const end =
             startOffset +
             (index + 1) * step -
-            step * 0.04;
+            step * 0.035;
           const middle = (start + end) / 2;
           const percentile = Math.max(
             0,
@@ -240,34 +259,42 @@ function PizzaChart({ profile }: { profile: ProfileData }) {
             ((outerRadius - innerRadius) * percentile) /
               100;
           const phaseColor =
-            PHASE_COLORS[metric.phase] ?? "#299c8e";
+            PHASE_COLORS[metric.phase] ?? "#2eb4a3";
 
           const valuePoint = polar(
             centerX,
             centerY,
-            Math.max(innerRadius + 27, valueRadius - 16),
+            Math.max(innerRadius + 42, valueRadius - 30),
             middle,
           );
           const percentilePoint = polar(
             centerX,
             centerY,
-            outerRadius + 15,
+            percentileRadius,
             middle,
           );
-          const labelPoint = polar(
+          const leaderStart = polar(
             centerX,
             centerY,
-            labelRadius,
+            leaderStartRadius,
+            middle,
+          );
+          const leaderBend = polar(
+            centerX,
+            centerY,
+            leaderBendRadius,
             middle,
           );
 
-          const horizontalOffset = labelPoint.x - centerX;
-          const textAnchor =
-            horizontalOffset > 36
-              ? "start"
-              : horizontalOffset < -36
-                ? "end"
-                : "middle";
+          const rightSide = Math.cos(middle) >= 0;
+          const labelX = rightSide
+            ? centerX + labelRadius
+            : centerX - labelRadius;
+          const labelY = leaderBend.y;
+          const elbowX = rightSide
+            ? labelX - 26
+            : labelX + 26;
+          const textAnchor = rightSide ? "start" : "end";
           const lines = splitLabel(metric.label);
 
           return (
@@ -295,8 +322,8 @@ function PizzaChart({ profile }: { profile: ProfileData }) {
                   centerY,
                   start,
                   end,
-                  outerRadius + 5,
-                  outerRadius + 11,
+                  outerRadius + 8,
+                  outerRadius + 18,
                 )}
                 fill={phaseColor}
                 className={styles.phaseBand}
@@ -354,21 +381,31 @@ function PizzaChart({ profile }: { profile: ProfileData }) {
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className={styles.percentileNumber}
+                style={{ fill: phaseColor }}
               >
                 {Math.round(percentile)}
               </text>
 
+              <polyline
+                points={[
+                  `${leaderStart.x},${leaderStart.y}`,
+                  `${leaderBend.x},${leaderBend.y}`,
+                  `${elbowX},${labelY}`,
+                ].join(" ")}
+                className={styles.leaderLine}
+              />
+
               <text
-                x={labelPoint.x}
-                y={labelPoint.y}
+                x={labelX}
+                y={labelY - (lines.length > 1 ? 7 : 0)}
                 textAnchor={textAnchor}
                 className={styles.metricLabel}
               >
                 {lines.map((line, lineIndex) => (
                   <tspan
                     key={`${metric.key}-${lineIndex}`}
-                    x={labelPoint.x}
-                    dy={lineIndex === 0 ? 0 : 13}
+                    x={labelX}
+                    dy={lineIndex === 0 ? 0 : 17}
                   >
                     {line}
                   </tspan>
@@ -386,7 +423,7 @@ function PizzaChart({ profile }: { profile: ProfileData }) {
         />
         <text
           x={centerX}
-          y={centerY - 13}
+          y={centerY - 20}
           textAnchor="middle"
           className={styles.coreTitle}
         >
@@ -394,7 +431,7 @@ function PizzaChart({ profile }: { profile: ProfileData }) {
         </text>
         <text
           x={centerX}
-          y={centerY + 11}
+          y={centerY + 14}
           textAnchor="middle"
           className={styles.coreMeta}
         >
@@ -406,13 +443,19 @@ function PizzaChart({ profile }: { profile: ProfileData }) {
         </text>
         <text
           x={centerX}
-          y={centerY + 29}
+          y={centerY + 44}
           textAnchor="middle"
           className={styles.coreFootnote}
         >
-          same-role percentile
+          same-role EPL percentiles
         </text>
       </svg>
+
+      <p className={styles.chartNote}>
+        Wedge length shows the same-role EPL percentile. The
+        value inside each wedge is the underlying per-90 or
+        percentage statistic.
+      </p>
     </div>
   );
 }
@@ -488,10 +531,12 @@ export default function PlayerProfileSection({
   const phases = useMemo(() => {
     if (!profile) return [];
 
-    return Array.from(
-      new Set(
-        profile.metrics.map((metric) => metric.phase),
-      ),
+    const available = new Set(
+      profile.metrics.map((metric) => metric.phase),
+    );
+
+    return PHASE_ORDER.filter((phase) =>
+      available.has(phase),
     );
   }, [profile]);
 
@@ -519,11 +564,17 @@ export default function PlayerProfileSection({
       >
         <div className={styles.profileHeader}>
           <div>
-            <p className="label">SEASON PROFILE</p>
-            <h3>How the player produces value</h3>
+            <p className={styles.season}>
+              {profile.season ?? "Current season"}
+            </p>
+            <h3>{profile.player_name}</h3>
             <p>
-              Same-role EPL percentiles across scoring,
-              creation, progression and defending.
+              {roleLabel(profile.primary_role)}
+              {profile.secondary_role
+                ? ` · Secondary: ${roleLabel(
+                    profile.secondary_role,
+                  )}`
+                : ""}
             </p>
           </div>
 
@@ -532,87 +583,64 @@ export default function PlayerProfileSection({
           </span>
         </div>
 
-        <div className={styles.profileLayout}>
-          <aside className={styles.profileSummary}>
-            <div className={styles.profileIdentity}>
-              <span>
-                {profile.season ?? "Current season"}
-              </span>
-              <strong>{profile.player_name}</strong>
-              {profile.secondary_role && (
-                <small>
-                  Secondary role:{" "}
-                  {roleLabel(profile.secondary_role)}
-                </small>
-              )}
-            </div>
-
-            <div className={styles.factGrid}>
-              <div>
-                <span>Minutes</span>
-                <b>
-                  {profile.minutes == null
-                    ? "—"
-                    : Math.round(
-                        profile.minutes,
-                      ).toLocaleString()}
-                </b>
-              </div>
-              <div>
-                <span>Appearances</span>
-                <b>{profile.appearances ?? "—"}</b>
-              </div>
-              <div>
-                <span>Role share</span>
-                <b>
-                  {profile.primary_role_share == null
-                    ? "—"
-                    : `${Math.round(
-                        profile.primary_role_share * 100,
-                      )}%`}
-                </b>
-              </div>
-              <div>
-                <span>Benchmark</span>
-                <b>{benchmarkMinutes}+ min</b>
-              </div>
-            </div>
-
-            <div className={styles.phaseLegend}>
-              {phases.map((phase) => (
-                <span key={phase}>
-                  <i
-                    style={{
-                      background:
-                        PHASE_COLORS[phase] ?? "#299c8e",
-                    }}
-                  />
-                  {phase}
-                </span>
-              ))}
-            </div>
-
-            <p className={styles.readingNote}>
-              The number inside a wedge is the actual per-90
-              or percentage statistic. Wedge length and the
-              outer number show the percentile.
-            </p>
-          </aside>
-
-          <PizzaChart profile={profile} />
+        <div className={styles.factGrid}>
+          <div>
+            <span>Minutes</span>
+            <b>
+              {profile.minutes == null
+                ? "—"
+                : Math.round(
+                    profile.minutes,
+                  ).toLocaleString()}
+            </b>
+          </div>
+          <div>
+            <span>Appearances</span>
+            <b>{profile.appearances ?? "—"}</b>
+          </div>
+          <div>
+            <span>Primary-role share</span>
+            <b>
+              {profile.primary_role_share == null
+                ? "—"
+                : `${Math.round(
+                    profile.primary_role_share * 100,
+                  )}%`}
+            </b>
+          </div>
+          <div>
+            <span>Percentile benchmark</span>
+            <b>{benchmarkMinutes}+ min</b>
+          </div>
         </div>
+
+        <div className={styles.phaseLegend}>
+          {phases.map((phase) => (
+            <span key={phase}>
+              <i
+                style={{
+                  background:
+                    PHASE_COLORS[phase] ?? "#2eb4a3",
+                }}
+              />
+              {phase}
+            </span>
+          ))}
+        </div>
+
+        <PizzaChart profile={profile} />
       </article>
 
       {similar.length > 0 && (
         <section className={styles.similarChapter}>
           <div className={styles.chapterHeader}>
-            <span>03</span>
+            <span>04</span>
             <div>
               <p className="label">PLAYER SIMILARITY</p>
-              <h2>Who plays in a comparable way?</h2>
+              <h2>Comparable same-role profiles</h2>
               <p>
-                The closest same-role profiles using the same
-                standardized season metrics.
+                The closest standardized season profiles using
+                the same role-specific metrics.
               </p>
             </div>
           </div>
