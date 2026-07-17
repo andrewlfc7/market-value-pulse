@@ -1,0 +1,81 @@
+version: 2
+
+sources:
+  - name: app
+    description: PostgreSQL tables loaded by the Market Value Pulse serving pipeline.
+    schema: public
+    tables:
+      - name: players
+        description: Canonical player dimension.
+        columns:
+          - name: player_id
+            data_tests: [not_null, unique]
+          - name: display_name
+            data_tests: [not_null]
+
+      - name: player_match_ratings
+        description: Immutable post-match ratings by model version.
+        columns:
+          - name: player_id
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('app', 'players')
+                  field: player_id
+          - name: match_id
+            data_tests: [not_null]
+          - name: rating_version
+            data_tests: [not_null]
+
+      - name: market_valuations
+        description: Observed player market values.
+        columns:
+          - name: player_id
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('app', 'players')
+                  field: player_id
+          - name: valuation_date
+            data_tests: [not_null]
+          - name: value_eur
+            data_tests: [not_null]
+
+      - name: valuation_estimates
+        description: Model valuation estimates and predictive intervals.
+        columns:
+          - name: player_id
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('app', 'players')
+                  field: player_id
+          - name: scored_at
+            data_tests: [not_null]
+          - name: model_version
+            data_tests: [not_null]
+
+      - name: player_form_state
+        description: Incrementally maintained player form state.
+        columns:
+          - name: player_id
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('app', 'players')
+                  field: player_id
+          - name: rating_version
+            data_tests: [not_null]
+
+      - name: pipeline_runs
+        description: Pipeline execution history.
+        columns:
+          - name: run_id
+            data_tests: [not_null, unique]
+          - name: pipeline
+            data_tests: [not_null]
+          - name: status
+            data_tests:
+              - not_null
+              - accepted_values:
+                  values: ['running', 'succeeded', 'failed', 'partial', 'completed', 'skipped']

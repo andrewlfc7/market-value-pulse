@@ -1,103 +1,3281 @@
 {
-  "version": "0.6.0",
+  "version": "1.0.0",
+  "generated_at": "2026-07-17T21:39:12+00:00",
+  "summary": {
+    "datasets": 7,
+    "files": 12,
+    "rows": 102022,
+    "fields": 250,
+    "contract_failures": 0
+  },
   "datasets": [
     {
-      "name": "whoscored_raw_runs",
-      "layer": "raw",
-      "owner": "data-engineering",
-      "grain": "one immutable source response per run and match",
-      "path": "data/raw/whoscored/"
-    },
-    {
-      "name": "transfermarkt_raw_runs",
-      "layer": "raw",
-      "owner": "data-engineering",
-      "grain": "one immutable source response per run and player",
-      "path": "data/raw/transfermarkt/"
-    },
-    {
-      "name": "whoscored_matches",
-      "layer": "normalized",
-      "owner": "data-engineering",
-      "grain": "one row per match",
-      "path": "data/normalized/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/matches.parquet"
-    },
-    {
-      "name": "whoscored_player_matches",
-      "layer": "normalized",
-      "owner": "data-engineering",
-      "grain": "one row per player-match",
-      "path": "data/normalized/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/player_matches.parquet"
-    },
-    {
-      "name": "whoscored_events",
-      "layer": "normalized",
-      "owner": "data-engineering",
-      "grain": "one row per stable match-event ID",
-      "path": "data/normalized/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/events.parquet"
-    },
-    {
-      "name": "transfermarkt_players_and_valuations",
-      "layer": "normalized",
-      "owner": "data-engineering",
-      "grain": "one row per player or player valuation date",
-      "path": "data/normalized/transfermarkt/competition=<competition>/season=<season>/run_id=<id>/"
-    },
-    {
-      "name": "player_source_mapping",
-      "layer": "normalized",
-      "owner": "data-engineering",
-      "grain": "one approved one-to-one WhoScored-to-Transfermarkt player mapping",
-      "path": "data/normalized/entity_resolution/player_mapping_exact.parquet"
-    },
-    {
-      "name": "match_action_features",
-      "layer": "features",
-      "owner": "data-science",
-      "grain": "one row per scored shot, pass, carry, or defensive action",
-      "path": "data/features/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/"
-    },
-    {
-      "name": "player_match_features",
-      "layer": "features",
-      "owner": "data-science",
-      "grain": "one row per player-match",
-      "path": "data/features/whoscored/competition=<competition>/season=<season>/matches/match_id=<id>/player_match_features.parquet"
-    },
-    {
       "name": "player_match_ratings",
+      "description": "Position-adjusted post-match ratings and their underlying player-match features for each EPL season.",
       "layer": "features",
       "owner": "data-science",
-      "grain": "one immutable post-match rating per player-match and model version",
-      "path": "data/features/ratings/competition=<competition>/season=<season>/player_match_ratings.parquet"
+      "grain": "one player appearance per match and rating model version",
+      "required": true,
+      "status": "available",
+      "paths": [
+        "data/features/ratings/competition=*/season=*/player_match_ratings.parquet"
+      ],
+      "physical_files": [
+        "data/features/ratings/competition=EPL/season=2020-2021/player_match_ratings.parquet",
+        "data/features/ratings/competition=EPL/season=2021-2022/player_match_ratings.parquet",
+        "data/features/ratings/competition=EPL/season=2022-2023/player_match_ratings.parquet",
+        "data/features/ratings/competition=EPL/season=2023-2024/player_match_ratings.parquet",
+        "data/features/ratings/competition=EPL/season=2024-2025/player_match_ratings.parquet",
+        "data/features/ratings/competition=EPL/season=2025-2026/player_match_ratings.parquet"
+      ],
+      "published_aliases": [],
+      "file_count": 6,
+      "row_count": 66546,
+      "primary_key": [
+        "whoscored_player_id",
+        "match_id",
+        "rating_version"
+      ],
+      "partition_by": [
+        "competition",
+        "season"
+      ],
+      "upstream": [
+        "feature_player_match_features",
+        "normalized_whoscored_events"
+      ],
+      "downstream": [
+        "players",
+        "match_impacts",
+        "player_valuation_predictions",
+        "player_profiles"
+      ],
+      "quality_rules": [
+        "Ratings are unique by player, match, and rating model version.",
+        "Minutes cannot be negative.",
+        "Post-match ratings remain on the documented 1\u201310 scale.",
+        "All season partitions use a compatible schema."
+      ],
+      "contract": {
+        "status": "passed",
+        "errors": []
+      },
+      "schema_drift": {
+        "status": "compatible",
+        "files_with_drift": []
+      },
+      "fields": [
+        {
+          "name": "match_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Stable WhoScored match identifier.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Canonical player identifier used by the serving layer.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "team_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "WhoScored team identifier for the player in the match or serving snapshot.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "side",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Whether the player represented the home or away team.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "player_name",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player display name carried from the source record.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "position",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Detailed WhoScored position code recorded for the appearance.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "shirt_number",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Squad number recorded for the appearance.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "started",
+          "dtype": "Boolean",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Whether the player was in the starting lineup.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "is_man_of_match",
+          "dtype": "Boolean",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Whether WhoScored marked the player as man of the match.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "player_json",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Serialized source player payload retained for traceability.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "minutes",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Minutes played in the row's match, season, or valuation interval.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 130
+            }
+          ]
+        },
+        {
+          "name": "minutes_source",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Source or calculation method used for minutes played.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "position_group",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Broad position group used by the current rating or valuation model.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "position_group_source",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Method used to derive the broad position group.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "whoscored_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player identifier from WhoScored.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "season",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Competition season label in YYYY-YYYY format.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "match_datetime",
+          "dtype": "Datetime(time_unit='us', time_zone=None)",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Scheduled or observed match kickoff timestamp.",
+          "tags": [
+            "temporal"
+          ],
+          "checks": []
+        },
+        {
+          "name": "shots",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Total shot attempts credited to the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "goals",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals scored by the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xg",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals generated by the player's shots.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xgot",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals on target generated by on-target shots.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "passes",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Pass attempts credited to the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "completed_passes",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Successful pass attempts.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "key_passes",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Passes directly creating a shot.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "progressive_passes",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Passes meeting the project progression threshold.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "assists",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals directly assisted by the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xa",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected assists generated by the player's passes.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "carries",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Ball carries credited to the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "progressive_carries",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Carries meeting the project progression threshold.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "final_third_carries",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Carries ending in the attacking final third.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "carries_into_box",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Carries entering the penalty area.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xt_added",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected-threat value added by player actions.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xpv_added",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected possession-value contribution added by player actions.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "opponent_threat_prevented",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Estimated opponent threat removed by defensive actions.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "defensive_net_threat_reduction",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Net opponent threat reduction after accounting for defensive actions and concessions.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "yellow_cards",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Yellow cards received.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "red_cards",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Red cards received.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "big_chances_missed",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Big chances that did not result in a goal.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "big_chance_xg_missed",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected-goal value of missed big chances.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "own_goals",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Own goals scored by the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "shots_on_target_faced",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "On-target shots faced by a goalkeeper.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "goals_conceded_xgot_sample",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals conceded for the subset of shots with xGOT coverage.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xgot_faced",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals on target faced by a goalkeeper.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "goals_conceded",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals conceded while the goalkeeper was involved.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "big_chances_created",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "High-quality chances created for teammates.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "shots_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Total shot attempts credited to the player normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_shots_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed shots 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "xg_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals generated by the player's shots normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_xg_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed xG 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "xgot_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals on target generated by on-target shots normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_xgot_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed xGOT 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "xa_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected assists generated by the player's passes normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_xa_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed xA 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "key_passes_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Passes directly creating a shot normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_key_passes_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed key passes 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "big_chances_created_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "High-quality chances created for teammates normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_big_chances_created_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed big chances created 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "progressive_passes_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Passes meeting the project progression threshold normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_progressive_passes_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed progressive passes 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "progressive_carries_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Carries meeting the project progression threshold normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_progressive_carries_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed progressive carries 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "final_third_carries_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Carries ending in the attacking final third normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_final_third_carries_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural-log transformed final third carries 90 used to reduce skew during model fitting.",
+          "tags": [
+            "per-90",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "xpv_added_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected possession-value contribution added by player actions normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "opponent_threat_prevented_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Estimated opponent threat removed by defensive actions normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "defensive_net_threat_reduction_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Net opponent threat reduction after accounting for defensive actions and concessions normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "pass_completion_prior",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Role-level prior mean used to stabilize pass completion.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "pass_prior_strength",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Equivalent attempt count assigned to the pass-completion prior.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "smoothed_pass_completion",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Pass completion after empirical-Bayes shrinkage.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "pass_completion_above_expected",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Difference between smoothed and expected pass completion.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "finishing_above_expected",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals scored above expected goals.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "shot_placement_above_expected",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected-goals-on-target output above expected goals.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "saves",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "On-target shots faced minus goals conceded.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "save_percentage",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Share of on-target shots saved.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "goals_prevented",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals on target faced minus goals conceded.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "threat_component",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Standardized shot-threat contribution used by the post-match rating.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "creation_component",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Standardized chance-creation contribution used by the post-match rating.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "progression_component",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Standardized ball-progression contribution used by the post-match rating.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "retention_component",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Standardized possession-retention contribution used by the post-match rating.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "attacking_xpv_component",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Standardized attacking xPV contribution used by the post-match rating.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "defensive_component",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Standardized defensive contribution used by the post-match rating.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "finishing_component",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Standardized finishing contribution used by the post-match rating.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "raw_position_composite",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Weighted component composite before reliability adjustment.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "appearance_reliability",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 613,
+          "null_fraction": 0.009212,
+          "description": "Minutes-based reliability weight applied to the appearance.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        {
+          "name": "reliability_adjusted_composite",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Position composite after shrinkage toward the role baseline.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "standardized_composite",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 5209,
+          "null_fraction": 0.078277,
+          "description": "Role-standardized composite used to map performance onto the rating scale.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "goalkeeper_component",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 61950,
+          "null_fraction": 0.930935,
+          "description": "Standardized shot-stopping contribution used for goalkeepers.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "clean_sheet_bonus",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Bounded goalkeeper bonus for a clean sheet.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "base_rating",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 613,
+          "null_fraction": 0.009212,
+          "description": "Rating before decisive-action bonuses and disciplinary penalties.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "assist_overperformance",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Assists above expected assists used by the decisive-action adjustment.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "decisive_action_bonus",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Bounded bonus for goals, assists, and other decisive actions.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "card_penalty",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Rating deduction for yellow and red cards.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "big_chance_miss_penalty",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Rating deduction for missed big chances.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "own_goal_penalty",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Rating deduction for own goals.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "post_match_rating",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 613,
+          "null_fraction": 0.009212,
+          "description": "Final position-adjusted player rating on a 1\u201310 scale.",
+          "tags": [
+            "rating"
+          ],
+          "checks": [
+            {
+              "type": "range",
+              "min": 1,
+              "max": 10
+            }
+          ]
+        },
+        {
+          "name": "rating_version",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Immutable version identifier for the post-match rating formula.",
+          "tags": [
+            "rating"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "form_rating_ewm",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 613,
+          "null_fraction": 0.009212,
+          "description": "Minutes-weighted exponentially decayed form rating.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rolling_3_match_rating",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 613,
+          "null_fraction": 0.009212,
+          "description": "Mean rating over the latest three eligible appearances.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rolling_20_match_rating",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 613,
+          "null_fraction": 0.009212,
+          "description": "Mean rating over the latest 20 eligible appearances.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        }
+      ]
     },
     {
-      "name": "rating_processing_state",
-      "layer": "state",
-      "owner": "data-engineering",
-      "grain": "one source hash per processed match plus one current form row per player",
-      "path": "data/state/ratings/competition=<competition>/season=<season>/"
-    },
-    {
-      "name": "valuation_model_features_and_predictions",
-      "layer": "modeling",
-      "owner": "data-science",
-      "grain": "one labeled valuation interval or one current player scoring row",
-      "path": "data/modeling/valuation_model/"
-    },
-    {
-      "name": "api_serving_tables",
+      "name": "players",
+      "description": "Current player-level serving snapshot combining entity resolution, recent form, latest Transfermarkt valuation, and the active model projection.",
       "layer": "serving",
       "owner": "analytics-engineering",
-      "grain": "player snapshot, valuation history row, or player-match impact row",
-      "path": "data/serving/"
+      "grain": "one current serving row per canonical player",
+      "required": true,
+      "status": "available",
+      "paths": [
+        "data/serving/players.parquet"
+      ],
+      "physical_files": [
+        "data/serving/players.parquet"
+      ],
+      "published_aliases": [],
+      "file_count": 1,
+      "row_count": 493,
+      "primary_key": [
+        "player_id"
+      ],
+      "partition_by": [],
+      "upstream": [
+        "player_match_ratings",
+        "valuation_history",
+        "player_valuation_predictions",
+        "normalized_player_mapping"
+      ],
+      "downstream": [
+        "fastapi_player_outlook"
+      ],
+      "quality_rules": [
+        "Canonical player IDs are unique and non-null.",
+        "Forecast bounds contain the point estimate.",
+        "Probability and confidence values remain between zero and one."
+      ],
+      "contract": {
+        "status": "passed",
+        "errors": []
+      },
+      "schema_drift": {
+        "status": "compatible",
+        "files_with_drift": []
+      },
+      "fields": [
+        {
+          "name": "player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Canonical player identifier used by the serving layer.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "whoscored_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player identifier from WhoScored.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "transfermarkt_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player identifier from Transfermarkt.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "mapping_method",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Entity-resolution method used to connect source identifiers.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "mapping_confidence",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Confidence assigned to the accepted cross-source mapping.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        {
+          "name": "display_name",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Canonical player name shown by the API and dashboard.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "team_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "WhoScored team identifier for the player in the match or serving snapshot.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "position",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Detailed WhoScored position code recorded for the appearance.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "current_form_rating",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 39,
+          "null_fraction": 0.079108,
+          "description": "Latest exponentially weighted form rating exposed by the API.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rolling_3_match_rating",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 39,
+          "null_fraction": 0.079108,
+          "description": "Mean rating over the latest three eligible appearances.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rolling_20_match_rating",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 39,
+          "null_fraction": 0.079108,
+          "description": "Mean rating over the latest 20 eligible appearances.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "latest_valuation_date",
+          "dtype": "Date",
+          "nullable": true,
+          "null_count": 3,
+          "null_fraction": 0.006085,
+          "description": "Date of the most recent published Transfermarkt valuation.",
+          "tags": [
+            "temporal"
+          ],
+          "checks": []
+        },
+        {
+          "name": "current_market_value_eur",
+          "dtype": "Int64",
+          "nullable": true,
+          "null_count": 3,
+          "null_fraction": 0.006085,
+          "description": "Most recent observed Transfermarkt market value.",
+          "tags": [
+            "currency"
+          ],
+          "checks": []
+        },
+        {
+          "name": "estimated_value_eur",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 85,
+          "null_fraction": 0.172414,
+          "description": "Current model point estimate exposed by the API.",
+          "tags": [
+            "currency"
+          ],
+          "checks": []
+        },
+        {
+          "name": "estimated_lower_eur",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 85,
+          "null_fraction": 0.172414,
+          "description": "Lower bound of the current 90% predictive interval.",
+          "tags": [
+            "currency"
+          ],
+          "checks": []
+        },
+        {
+          "name": "estimated_upper_eur",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 85,
+          "null_fraction": 0.172414,
+          "description": "Upper bound of the current 90% predictive interval.",
+          "tags": [
+            "currency"
+          ],
+          "checks": []
+        },
+        {
+          "name": "predicted_pct_change",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 85,
+          "null_fraction": 0.172414,
+          "description": "Predicted pct change.",
+          "tags": [
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "probability_value_increase",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 85,
+          "null_fraction": 0.172414,
+          "description": "Posterior probability that market value increased.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        {
+          "name": "valuation_model_version",
+          "dtype": "String",
+          "nullable": true,
+          "null_count": 85,
+          "null_fraction": 0.172414,
+          "description": "Version identifier for the active valuation model.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "direction",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Categorical interpretation of the predicted value movement.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "confidence",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 85,
+          "null_fraction": 0.172414,
+          "description": "Normalized forecast-confidence indicator exposed to the UI.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        {
+          "name": "refreshed_at",
+          "dtype": "Datetime(time_unit='us', time_zone=None)",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Timestamp when the serving snapshot was generated.",
+          "tags": [
+            "temporal"
+          ],
+          "checks": []
+        }
+      ]
     },
     {
-      "name": "historical_replay_results",
-      "layer": "simulation",
+      "name": "valuation_history",
+      "description": "Observed Transfermarkt market-value history mapped to the canonical player identifier.",
+      "layer": "serving",
       "owner": "data-engineering",
-      "grain": "one row per chronologically replayed match",
-      "path": "data/replays/"
+      "grain": "one observed player valuation per date and source",
+      "required": true,
+      "status": "available",
+      "paths": [
+        "data/serving/valuation_history.parquet"
+      ],
+      "physical_files": [
+        "data/serving/valuation_history.parquet"
+      ],
+      "published_aliases": [],
+      "file_count": 1,
+      "row_count": 10433,
+      "primary_key": [
+        "player_id",
+        "valuation_date",
+        "source"
+      ],
+      "partition_by": [],
+      "upstream": [
+        "normalized_transfermarkt_valuations",
+        "normalized_player_mapping"
+      ],
+      "downstream": [
+        "players",
+        "player_valuation_predictions"
+      ],
+      "quality_rules": [
+        "Observed valuation values cannot be negative.",
+        "A player has at most one value per date and source."
+      ],
+      "contract": {
+        "status": "passed",
+        "errors": []
+      },
+      "schema_drift": {
+        "status": "compatible",
+        "files_with_drift": []
+      },
+      "fields": [
+        {
+          "name": "player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Canonical player identifier used by the serving layer.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "transfermarkt_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player identifier from Transfermarkt.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "valuation_date",
+          "dtype": "Date",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Date of the observed target or current valuation.",
+          "tags": [
+            "temporal"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "value_eur",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Observed market value in euros.",
+          "tags": [
+            "currency"
+          ],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0
+            }
+          ]
+        },
+        {
+          "name": "source",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Source system that published the valuation observation.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "player_valuation_predictions",
+      "description": "Current valuation model outputs, predictive intervals, probabilities, and the historical interval features used to produce them.",
+      "layer": "modeling",
+      "owner": "data-science",
+      "grain": "one valuation interval or current prediction row",
+      "required": true,
+      "status": "available",
+      "paths": [
+        "data/serving/player_valuation_predictions.parquet"
+      ],
+      "physical_files": [
+        "data/serving/player_valuation_predictions.parquet"
+      ],
+      "published_aliases": [],
+      "file_count": 1,
+      "row_count": 408,
+      "primary_key": [
+        "interval_id"
+      ],
+      "partition_by": [],
+      "upstream": [
+        "player_match_ratings",
+        "valuation_history",
+        "normalized_player_mapping"
+      ],
+      "downstream": [
+        "players",
+        "fastapi_player_outlook"
+      ],
+      "quality_rules": [
+        "The predictive lower bound does not exceed the point estimate.",
+        "The point estimate does not exceed the predictive upper bound.",
+        "Probability of increase remains between zero and one."
+      ],
+      "contract": {
+        "status": "passed",
+        "errors": []
+      },
+      "schema_drift": {
+        "status": "compatible",
+        "files_with_drift": []
+      },
+      "fields": [
+        {
+          "name": "interval_id",
+          "dtype": "UInt32",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Stable identifier for the modeled valuation interval.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "transfermarkt_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player identifier from Transfermarkt.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "whoscored_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player identifier from WhoScored.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "previous_valuation_date",
+          "dtype": "Date",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Date of the observed valuation that starts the interval.",
+          "tags": [
+            "temporal"
+          ],
+          "checks": []
+        },
+        {
+          "name": "previous_market_value_eur",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Observed market value at the start of the interval.",
+          "tags": [
+            "currency"
+          ],
+          "checks": []
+        },
+        {
+          "name": "two_updates_back_value_eur",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 1,
+          "null_fraction": 0.002451,
+          "description": "Observed value two Transfermarkt updates before the interval target.",
+          "tags": [
+            "temporal",
+            "currency"
+          ],
+          "checks": []
+        },
+        {
+          "name": "age_at_valuation",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player age in years at the start of the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "club_name",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Club associated with the valuation observation.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "valuation_date",
+          "dtype": "Date",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Date of the observed target or current valuation.",
+          "tags": [
+            "temporal"
+          ],
+          "checks": []
+        },
+        {
+          "name": "interval_days",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Number of days between observed valuation updates.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "log_previous_market_value",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural logarithm of the previous observed market value.",
+          "tags": [
+            "currency",
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "previous_log_value_change",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 1,
+          "null_fraction": 0.002451,
+          "description": "Log change in value during the preceding valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "market_value_eur",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 408,
+          "null_fraction": 1.0,
+          "description": "Observed market value at the end of a labeled interval.",
+          "tags": [
+            "currency"
+          ],
+          "checks": []
+        },
+        {
+          "name": "target_log_value_change",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 408,
+          "null_fraction": 1.0,
+          "description": "Observed log market-value change used as the regression target.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "target_pct_value_change",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 408,
+          "null_fraction": 1.0,
+          "description": "Observed proportional market-value change.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "appearances",
+          "dtype": "UInt32",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Distinct player appearances represented by the row.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "starts",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Number of starts in the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "minutes",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Minutes played in the row's match, season, or valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "position_group",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Broad position group used by the current rating or valuation model.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "player_name",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player display name carried from the source record.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "average_rating",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Mean post-match rating during the valuation interval.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "recency_weighted_rating",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Interval rating weighted toward more recent appearances.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rating_last_90_days",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 17,
+          "null_fraction": 0.041667,
+          "description": "Mean eligible rating during the 90 days before the valuation cutoff.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rating_volatility",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Standard deviation of post-match ratings during the interval.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "threat_component_average",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 32,
+          "null_fraction": 0.078431,
+          "description": "Mean standardized shot-threat contribution used by the post-match rating. across appearances in the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "creation_component_average",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 32,
+          "null_fraction": 0.078431,
+          "description": "Mean standardized chance-creation contribution used by the post-match rating. across appearances in the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "progression_component_average",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 32,
+          "null_fraction": 0.078431,
+          "description": "Mean standardized ball-progression contribution used by the post-match rating. across appearances in the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "retention_component_average",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 32,
+          "null_fraction": 0.078431,
+          "description": "Mean standardized possession-retention contribution used by the post-match rating. across appearances in the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "attacking_xpv_component_average",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 32,
+          "null_fraction": 0.078431,
+          "description": "Mean standardized attacking xPV contribution used by the post-match rating. across appearances in the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "defensive_component_average",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 32,
+          "null_fraction": 0.078431,
+          "description": "Mean standardized defensive contribution used by the post-match rating. across appearances in the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "finishing_component_average",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 32,
+          "null_fraction": 0.078431,
+          "description": "Mean standardized finishing contribution used by the post-match rating. across appearances in the valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "goals",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals scored by the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "assists",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals directly assisted by the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xg",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals generated by the player's shots.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xgot",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals on target generated by on-target shots.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "xa",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected assists generated by the player's passes.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "big_chances_missed",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Big chances that did not result in a goal.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "big_chance_xg_missed",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected-goal value of missed big chances.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "own_goals",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Own goals scored by the player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "form_rating_ewm",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Minutes-weighted exponentially decayed form rating.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rolling_3_match_rating",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Mean rating over the latest three eligible appearances.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rolling_20_match_rating",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Mean rating over the latest 20 eligible appearances.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rolling_3_matches_available",
+          "dtype": "UInt32",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Number of eligible matches available for the three-match window.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "rolling_20_matches_available",
+          "dtype": "UInt32",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Number of eligible matches available for the 20-match window.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "log_minutes",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural logarithm of interval minutes plus one.",
+          "tags": [
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "log_appearances",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Natural logarithm of interval appearances plus one.",
+          "tags": [
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "start_share",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Share of interval appearances that were starts.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "age_squared",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Squared age term used to model nonlinear age effects.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "valuation_year",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Calendar year of the valuation cutoff.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "valuation_month_sin",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Sine encoding of valuation month seasonality.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "valuation_month_cos",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Cosine encoding of valuation month seasonality.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "recent_rating_trend",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 17,
+          "null_fraction": 0.041667,
+          "description": "Difference between short-window and long-window rating form.",
+          "tags": [
+            "rating"
+          ],
+          "checks": []
+        },
+        {
+          "name": "goals_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals scored by the player normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "assists_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals directly assisted by the player normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "xg_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals generated by the player's shots normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "xgot_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected goals on target generated by on-target shots normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "xa_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected assists generated by the player's passes normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "big_chances_missed_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Big chances that did not result in a goal normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "big_chance_xg_missed_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Expected-goal value of missed big chances normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "own_goals_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Own goals scored by the player normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "goals_over_xg_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Goals above expected goals normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "assists_over_xa_per90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Assists above expected assists normalized per 90 minutes.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "valuation_model_version",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Version identifier for the active valuation model.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "predicted_log_value_change",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Posterior mean predicted log market-value change.",
+          "tags": [
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "predicted_pct_value_change",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Predicted proportional change from the observed baseline value.",
+          "tags": [
+            "model"
+          ],
+          "checks": []
+        },
+        {
+          "name": "probability_value_increase",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Posterior probability that market value increased.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        {
+          "name": "predictive_log_change_lower_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Lower bound of the 90% predictive interval on log change.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "predictive_log_change_upper_90",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Upper bound of the 90% predictive interval on log change.",
+          "tags": [
+            "per-90"
+          ],
+          "checks": []
+        },
+        {
+          "name": "predicted_market_value_eur",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Model point estimate of current market value.",
+          "tags": [
+            "currency",
+            "model"
+          ],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0
+            }
+          ]
+        },
+        {
+          "name": "predicted_market_value_lower_90_eur",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Lower bound of the 90% market-value predictive interval.",
+          "tags": [
+            "currency",
+            "model"
+          ],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0
+            }
+          ]
+        },
+        {
+          "name": "predicted_market_value_upper_90_eur",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Upper bound of the 90% market-value predictive interval.",
+          "tags": [
+            "currency",
+            "model"
+          ],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "match_impacts",
+      "description": "Recent player-match ratings exposed to the API with human-readable component explanations and optional valuation replay outputs.",
+      "layer": "serving",
+      "owner": "analytics-engineering",
+      "grain": "one player-match impact row per rating version",
+      "required": true,
+      "status": "available",
+      "paths": [
+        "data/serving/match_impacts.parquet"
+      ],
+      "physical_files": [
+        "data/serving/match_impacts.parquet"
+      ],
+      "published_aliases": [],
+      "file_count": 1,
+      "row_count": 11492,
+      "primary_key": [
+        "player_id",
+        "match_id",
+        "rating_version"
+      ],
+      "partition_by": [],
+      "upstream": [
+        "player_match_ratings",
+        "valuation_replay_results"
+      ],
+      "downstream": [
+        "fastapi_player_outlook"
+      ],
+      "quality_rules": [
+        "Replay fields may be null until historical replay scoring runs.",
+        "Rating and minutes are inherited from the immutable rating output."
+      ],
+      "contract": {
+        "status": "passed",
+        "errors": []
+      },
+      "schema_drift": {
+        "status": "compatible",
+        "files_with_drift": []
+      },
+      "fields": [
+        {
+          "name": "replay_run_id",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Identifier for the chronological valuation replay run.",
+          "tags": [
+            "identifier",
+            "future-state"
+          ],
+          "checks": []
+        },
+        {
+          "name": "replay_sequence",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Order of the match inside a chronological replay.",
+          "tags": [
+            "future-state"
+          ],
+          "checks": []
+        },
+        {
+          "name": "valuation_update_status",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Status of valuation scoring for the replayed match.",
+          "tags": [
+            "temporal",
+            "future-state"
+          ],
+          "checks": []
+        },
+        {
+          "name": "valuation_estimate_eur",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Replayed point estimate after incorporating the match.",
+          "tags": [
+            "currency",
+            "future-state"
+          ],
+          "checks": []
+        },
+        {
+          "name": "valuation_lower_90_eur",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Lower bound of the replayed 90% predictive interval.",
+          "tags": [
+            "currency",
+            "future-state"
+          ],
+          "checks": []
+        },
+        {
+          "name": "valuation_upper_90_eur",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Upper bound of the replayed 90% predictive interval.",
+          "tags": [
+            "currency",
+            "future-state"
+          ],
+          "checks": []
+        },
+        {
+          "name": "estimated_value_delta_eur",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Change in the replayed valuation estimate after the match.",
+          "tags": [
+            "currency",
+            "future-state"
+          ],
+          "checks": []
+        },
+        {
+          "name": "probability_value_increase",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Posterior probability that market value increased.",
+          "tags": [
+            "future-state"
+          ],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        {
+          "name": "player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Canonical player identifier used by the serving layer.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "match_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Stable WhoScored match identifier.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "match_datetime",
+          "dtype": "Datetime(time_unit='us', time_zone=None)",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Scheduled or observed match kickoff timestamp.",
+          "tags": [
+            "temporal"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rating",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 131,
+          "null_fraction": 0.011399,
+          "description": "Published post-match rating exposed by the serving layer.",
+          "tags": [
+            "rating"
+          ],
+          "checks": [
+            {
+              "type": "range",
+              "min": 1,
+              "max": 10
+            }
+          ]
+        },
+        {
+          "name": "performance_impact_score",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 131,
+          "null_fraction": 0.011399,
+          "description": "Difference between the match rating and the neutral 6.0 baseline.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "impact_direction",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Categorical positive, neutral, or negative interpretation of match impact.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "explanation",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Human-readable summary of the strongest rating components.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "minutes",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Minutes played in the row's match, season, or valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "opponent",
+          "dtype": "Null",
+          "nullable": true,
+          "null_count": 11492,
+          "null_fraction": 1.0,
+          "description": "Opponent display name when available from the serving build.",
+          "tags": [
+            "future-state"
+          ],
+          "checks": []
+        },
+        {
+          "name": "rating_version",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Immutable version identifier for the post-match rating formula.",
+          "tags": [
+            "rating"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "player_profiles",
+      "description": "Long-form role-relative season profiles containing the underlying metric value and same-role EPL percentile.",
+      "layer": "serving",
+      "owner": "data-science",
+      "grain": "one player, season, and profile metric",
+      "required": true,
+      "status": "available",
+      "paths": [
+        "data/serving/player_profiles.parquet"
+      ],
+      "physical_files": [
+        "data/serving/player_profiles.parquet"
+      ],
+      "published_aliases": [
+        "data/serving/profiles/competition=<competition>/season=<season>/player_profiles.parquet"
+      ],
+      "file_count": 1,
+      "row_count": 8340,
+      "primary_key": [
+        "player_id",
+        "competition",
+        "season",
+        "metric_key"
+      ],
+      "partition_by": [
+        "competition",
+        "season"
+      ],
+      "upstream": [
+        "player_match_ratings",
+        "normalized_whoscored_events",
+        "feature_shots_with_models",
+        "feature_xthreat_actions",
+        "feature_xpv_actions"
+      ],
+      "downstream": [
+        "player_similarities",
+        "fastapi_player_profile"
+      ],
+      "quality_rules": [
+        "Metric keys are unique per player, competition, and season.",
+        "Percentiles remain between zero and 100.",
+        "Primary-role share remains between zero and one."
+      ],
+      "contract": {
+        "status": "passed",
+        "errors": []
+      },
+      "schema_drift": {
+        "status": "compatible",
+        "files_with_drift": []
+      },
+      "fields": [
+        {
+          "name": "player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Canonical player identifier used by the serving layer.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "whoscored_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player identifier from WhoScored.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "player_name",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player display name carried from the source record.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "competition",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Normalized competition key.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "season",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Competition season label in YYYY-YYYY format.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "primary_role",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Detailed role with the most eligible minutes in the season.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "secondary_role",
+          "dtype": "String",
+          "nullable": true,
+          "null_count": 4020,
+          "null_fraction": 0.482014,
+          "description": "Detailed role with the second-most eligible minutes, when present.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "primary_role_share",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Share of eligible minutes played in the primary detailed role.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        {
+          "name": "is_hybrid_role",
+          "dtype": "Boolean",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Whether the primary role accounts for less than 60% of eligible role minutes.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "minutes",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Minutes played in the row's match, season, or valuation interval.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0
+            }
+          ]
+        },
+        {
+          "name": "appearances",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Distinct player appearances represented by the row.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "sample_status",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Whether the player meets the profile and benchmark sample thresholds.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "phase",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "High-level phase grouping used to organize profile metrics.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "metric_key",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Stable machine-readable profile metric identifier.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "metric_label",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Human-readable label displayed in the profile chart.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "metric_value",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 112,
+          "null_fraction": 0.013429,
+          "description": "Underlying season metric value shown inside the profile wedge.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "percentile",
+          "dtype": "Float64",
+          "nullable": true,
+          "null_count": 112,
+          "null_fraction": 0.013429,
+          "description": "Same-role EPL percentile after winsorization and direction handling.",
+          "tags": [
+            "percentile"
+          ],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 100
+            }
+          ]
+        },
+        {
+          "name": "higher_is_better",
+          "dtype": "Boolean",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Whether larger raw values represent stronger performance.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "display_order",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Stable order used to arrange metrics around the profile chart.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "benchmark_minutes",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Minimum season minutes required for inclusion in the percentile benchmark.",
+          "tags": [],
+          "checks": []
+        }
+      ]
+    },
+    {
+      "name": "player_similarities",
+      "description": "Ranked same-role player comparisons calculated from standardized role-specific season metrics.",
+      "layer": "serving",
+      "owner": "data-science",
+      "grain": "one selected player and similar-player pair per season",
+      "required": true,
+      "status": "available",
+      "paths": [
+        "data/serving/player_similarities.parquet"
+      ],
+      "physical_files": [
+        "data/serving/player_similarities.parquet"
+      ],
+      "published_aliases": [
+        "data/serving/profiles/competition=<competition>/season=<season>/player_similarities.parquet"
+      ],
+      "file_count": 1,
+      "row_count": 4310,
+      "primary_key": [
+        "player_id",
+        "competition",
+        "season",
+        "similar_player_id"
+      ],
+      "partition_by": [
+        "competition",
+        "season"
+      ],
+      "upstream": [
+        "player_profiles"
+      ],
+      "downstream": [
+        "fastapi_similar_players"
+      ],
+      "quality_rules": [
+        "A player cannot be returned as their own comparison.",
+        "Similarity scores remain between zero and 100.",
+        "Ranks are unique within each selected-player profile."
+      ],
+      "contract": {
+        "status": "passed",
+        "errors": []
+      },
+      "schema_drift": {
+        "status": "compatible",
+        "files_with_drift": []
+      },
+      "fields": [
+        {
+          "name": "player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Canonical player identifier used by the serving layer.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "whoscored_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player identifier from WhoScored.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": []
+        },
+        {
+          "name": "player_name",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Player display name carried from the source record.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "similar_player_id",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Canonical identifier of the compared player.",
+          "tags": [
+            "identifier"
+          ],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "similar_player_name",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Display name of the compared player.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "competition",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Normalized competition key.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "season",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Competition season label in YYYY-YYYY format.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "not_null"
+            }
+          ]
+        },
+        {
+          "name": "primary_role",
+          "dtype": "String",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Detailed role with the most eligible minutes in the season.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "secondary_role",
+          "dtype": "String",
+          "nullable": true,
+          "null_count": 2264,
+          "null_fraction": 0.52529,
+          "description": "Detailed role with the second-most eligible minutes, when present.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "minutes",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Minutes played in the row's match, season, or valuation interval.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "appearances",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Distinct player appearances represented by the row.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "metrics_used",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Number of non-null standardized metrics used in the distance calculation.",
+          "tags": [],
+          "checks": []
+        },
+        {
+          "name": "similarity",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Exponential similarity score derived from weighted standardized distance.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 100
+            }
+          ]
+        },
+        {
+          "name": "profile_similarity",
+          "dtype": "Float64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Serving alias for the player-profile similarity score.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 0,
+              "max": 100
+            }
+          ]
+        },
+        {
+          "name": "rank",
+          "dtype": "Int64",
+          "nullable": false,
+          "null_count": 0,
+          "null_fraction": 0.0,
+          "description": "Similarity rank within the selected player's candidate set.",
+          "tags": [],
+          "checks": [
+            {
+              "type": "range",
+              "min": 1
+            }
+          ]
+        }
+      ]
     }
-  ]
+  ],
+  "validation": {
+    "status": "passed",
+    "errors": []
+  }
 }

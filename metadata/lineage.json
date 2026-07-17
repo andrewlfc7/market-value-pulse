@@ -1,44 +1,208 @@
 {
-  "version": "0.6.0",
+  "version": "1.0.0",
+  "generated_at": "2026-07-17T21:39:12+00:00",
   "nodes": [
-    "WhoScored raw",
-    "WhoScored normalized",
-    "Event-derived features",
-    "Player-match features",
-    "Post-match rating",
-    "Player form state",
-    "Transfermarkt raw",
-    "Transfermarkt normalized",
-    "Player entity mapping",
-    "Valuation estimate",
-    "PostgreSQL serving",
-    "API / dashboard",
-    "Historical replay"
+    {
+      "id": "feature_player_match_features",
+      "label": "feature_player_match_features",
+      "layer": "external",
+      "owner": "data-engineering",
+      "status": "logical"
+    },
+    {
+      "id": "feature_shots_with_models",
+      "label": "feature_shots_with_models",
+      "layer": "external",
+      "owner": "data-engineering",
+      "status": "logical"
+    },
+    {
+      "id": "feature_xpv_actions",
+      "label": "feature_xpv_actions",
+      "layer": "external",
+      "owner": "data-engineering",
+      "status": "logical"
+    },
+    {
+      "id": "feature_xthreat_actions",
+      "label": "feature_xthreat_actions",
+      "layer": "external",
+      "owner": "data-engineering",
+      "status": "logical"
+    },
+    {
+      "id": "match_impacts",
+      "label": "match_impacts",
+      "layer": "serving",
+      "owner": "analytics-engineering",
+      "status": "available"
+    },
+    {
+      "id": "normalized_player_mapping",
+      "label": "normalized_player_mapping",
+      "layer": "external",
+      "owner": "data-engineering",
+      "status": "logical"
+    },
+    {
+      "id": "normalized_transfermarkt_valuations",
+      "label": "normalized_transfermarkt_valuations",
+      "layer": "external",
+      "owner": "data-engineering",
+      "status": "logical"
+    },
+    {
+      "id": "normalized_whoscored_events",
+      "label": "normalized_whoscored_events",
+      "layer": "external",
+      "owner": "data-engineering",
+      "status": "logical"
+    },
+    {
+      "id": "player_match_ratings",
+      "label": "player_match_ratings",
+      "layer": "features",
+      "owner": "data-science",
+      "status": "available"
+    },
+    {
+      "id": "player_profiles",
+      "label": "player_profiles",
+      "layer": "serving",
+      "owner": "data-science",
+      "status": "available"
+    },
+    {
+      "id": "player_similarities",
+      "label": "player_similarities",
+      "layer": "serving",
+      "owner": "data-science",
+      "status": "available"
+    },
+    {
+      "id": "player_valuation_predictions",
+      "label": "player_valuation_predictions",
+      "layer": "modeling",
+      "owner": "data-science",
+      "status": "available"
+    },
+    {
+      "id": "players",
+      "label": "players",
+      "layer": "serving",
+      "owner": "analytics-engineering",
+      "status": "available"
+    },
+    {
+      "id": "valuation_history",
+      "label": "valuation_history",
+      "layer": "serving",
+      "owner": "data-engineering",
+      "status": "available"
+    },
+    {
+      "id": "valuation_replay_results",
+      "label": "valuation_replay_results",
+      "layer": "external",
+      "owner": "data-engineering",
+      "status": "logical"
+    }
   ],
   "edges": [
-    ["WhoScored raw", "WhoScored normalized"],
-    ["WhoScored normalized", "Event-derived features"],
-    ["Event-derived features", "Player-match features"],
-    ["Player-match features", "Post-match rating"],
-    ["Post-match rating", "Player form state"],
-    ["Transfermarkt raw", "Transfermarkt normalized"],
-    ["WhoScored normalized", "Player entity mapping"],
-    ["Transfermarkt normalized", "Player entity mapping"],
-    ["Player entity mapping", "Valuation estimate"],
-    ["Player form state", "Valuation estimate"],
-    ["Valuation estimate", "PostgreSQL serving"],
-    ["Post-match rating", "PostgreSQL serving"],
-    ["Transfermarkt normalized", "PostgreSQL serving"],
-    ["PostgreSQL serving", "API / dashboard"],
-    ["WhoScored normalized", "Historical replay"],
-    ["Historical replay", "Event-derived features"],
-    ["Historical replay", "Post-match rating"]
-  ],
-  "incremental_boundaries": [
-    "normalized match _SUCCESS.json",
-    "feature match _SUCCESS.json plus source/config/artifact signature",
-    "processed_matches.parquet feature hash",
-    "PostgreSQL UPSERT primary keys"
-  ],
-  "pending_adapter": null
+    {
+      "source": "feature_player_match_features",
+      "target": "player_match_ratings",
+      "relationship": "feeds"
+    },
+    {
+      "source": "feature_shots_with_models",
+      "target": "player_profiles",
+      "relationship": "feeds"
+    },
+    {
+      "source": "feature_xpv_actions",
+      "target": "player_profiles",
+      "relationship": "feeds"
+    },
+    {
+      "source": "feature_xthreat_actions",
+      "target": "player_profiles",
+      "relationship": "feeds"
+    },
+    {
+      "source": "normalized_player_mapping",
+      "target": "player_valuation_predictions",
+      "relationship": "feeds"
+    },
+    {
+      "source": "normalized_player_mapping",
+      "target": "players",
+      "relationship": "feeds"
+    },
+    {
+      "source": "normalized_player_mapping",
+      "target": "valuation_history",
+      "relationship": "feeds"
+    },
+    {
+      "source": "normalized_transfermarkt_valuations",
+      "target": "valuation_history",
+      "relationship": "feeds"
+    },
+    {
+      "source": "normalized_whoscored_events",
+      "target": "player_match_ratings",
+      "relationship": "feeds"
+    },
+    {
+      "source": "normalized_whoscored_events",
+      "target": "player_profiles",
+      "relationship": "feeds"
+    },
+    {
+      "source": "player_match_ratings",
+      "target": "match_impacts",
+      "relationship": "feeds"
+    },
+    {
+      "source": "player_match_ratings",
+      "target": "player_profiles",
+      "relationship": "feeds"
+    },
+    {
+      "source": "player_match_ratings",
+      "target": "player_valuation_predictions",
+      "relationship": "feeds"
+    },
+    {
+      "source": "player_match_ratings",
+      "target": "players",
+      "relationship": "feeds"
+    },
+    {
+      "source": "player_profiles",
+      "target": "player_similarities",
+      "relationship": "feeds"
+    },
+    {
+      "source": "player_valuation_predictions",
+      "target": "players",
+      "relationship": "feeds"
+    },
+    {
+      "source": "valuation_history",
+      "target": "player_valuation_predictions",
+      "relationship": "feeds"
+    },
+    {
+      "source": "valuation_history",
+      "target": "players",
+      "relationship": "feeds"
+    },
+    {
+      "source": "valuation_replay_results",
+      "target": "match_impacts",
+      "relationship": "feeds"
+    }
+  ]
 }

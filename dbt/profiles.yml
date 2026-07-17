@@ -1,0 +1,13 @@
+market_value_pulse:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('DBT_POSTGRES_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_POSTGRES_PORT', '55432') | int }}"
+      user: "{{ env_var('DBT_POSTGRES_USER', 'mvp') }}"
+      password: "{{ env_var('DBT_POSTGRES_PASSWORD', 'mvp') }}"
+      dbname: "{{ env_var('DBT_POSTGRES_DB', 'market-value-pulse') }}"
+      schema: "{{ env_var('DBT_POSTGRES_SCHEMA', 'dbt') }}"
+      threads: "{{ env_var('DBT_THREADS', '4') | int }}"
+      connect_timeout: 10

@@ -1,0 +1,361 @@
+{
+  "version": "1.0.0",
+  "datasets": [
+    {
+      "name": "player_match_ratings",
+      "description": "Position-adjusted post-match ratings and their underlying player-match features for each EPL season.",
+      "layer": "features",
+      "owner": "data-science",
+      "grain": "one player appearance per match and rating model version",
+      "paths": [
+        "data/features/ratings/competition=*/season=*/player_match_ratings.parquet"
+      ],
+      "primary_key": [
+        "whoscored_player_id",
+        "match_id",
+        "rating_version"
+      ],
+      "partition_by": [
+        "competition",
+        "season"
+      ],
+      "upstream": [
+        "feature_player_match_features",
+        "normalized_whoscored_events"
+      ],
+      "downstream": [
+        "players",
+        "match_impacts",
+        "player_valuation_predictions",
+        "player_profiles"
+      ],
+      "field_checks": {
+        "minutes": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 130
+          }
+        ],
+        "post_match_rating": [
+          {
+            "type": "range",
+            "min": 1,
+            "max": 10
+          }
+        ],
+        "appearance_reliability": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 1
+          }
+        ]
+      },
+      "quality_rules": [
+        "Ratings are unique by player, match, and rating model version.",
+        "Minutes cannot be negative.",
+        "Post-match ratings remain on the documented 1\u201310 scale.",
+        "All season partitions use a compatible schema."
+      ]
+    },
+    {
+      "name": "players",
+      "description": "Current player-level serving snapshot combining entity resolution, recent form, latest Transfermarkt valuation, and the active model projection.",
+      "layer": "serving",
+      "owner": "analytics-engineering",
+      "grain": "one current serving row per canonical player",
+      "paths": [
+        "data/serving/players.parquet"
+      ],
+      "primary_key": [
+        "player_id"
+      ],
+      "upstream": [
+        "player_match_ratings",
+        "valuation_history",
+        "player_valuation_predictions",
+        "normalized_player_mapping"
+      ],
+      "downstream": [
+        "fastapi_player_outlook"
+      ],
+      "field_checks": {
+        "mapping_confidence": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 1
+          }
+        ],
+        "probability_value_increase": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 1
+          }
+        ],
+        "confidence": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 1
+          }
+        ]
+      },
+      "quality_rules": [
+        "Canonical player IDs are unique and non-null.",
+        "Forecast bounds contain the point estimate.",
+        "Probability and confidence values remain between zero and one."
+      ]
+    },
+    {
+      "name": "valuation_history",
+      "description": "Observed Transfermarkt market-value history mapped to the canonical player identifier.",
+      "layer": "serving",
+      "owner": "data-engineering",
+      "grain": "one observed player valuation per date and source",
+      "paths": [
+        "data/serving/valuation_history.parquet"
+      ],
+      "primary_key": [
+        "player_id",
+        "valuation_date",
+        "source"
+      ],
+      "upstream": [
+        "normalized_transfermarkt_valuations",
+        "normalized_player_mapping"
+      ],
+      "downstream": [
+        "players",
+        "player_valuation_predictions"
+      ],
+      "field_checks": {
+        "value_eur": [
+          {
+            "type": "range",
+            "min": 0
+          }
+        ]
+      },
+      "quality_rules": [
+        "Observed valuation values cannot be negative.",
+        "A player has at most one value per date and source."
+      ]
+    },
+    {
+      "name": "player_valuation_predictions",
+      "description": "Current valuation model outputs, predictive intervals, probabilities, and the historical interval features used to produce them.",
+      "layer": "modeling",
+      "owner": "data-science",
+      "grain": "one valuation interval or current prediction row",
+      "paths": [
+        "data/serving/player_valuation_predictions.parquet"
+      ],
+      "primary_key": [
+        "interval_id"
+      ],
+      "upstream": [
+        "player_match_ratings",
+        "valuation_history",
+        "normalized_player_mapping"
+      ],
+      "downstream": [
+        "players",
+        "fastapi_player_outlook"
+      ],
+      "field_checks": {
+        "probability_value_increase": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 1
+          }
+        ],
+        "predicted_market_value_eur": [
+          {
+            "type": "range",
+            "min": 0
+          }
+        ],
+        "predicted_market_value_lower_90_eur": [
+          {
+            "type": "range",
+            "min": 0
+          }
+        ],
+        "predicted_market_value_upper_90_eur": [
+          {
+            "type": "range",
+            "min": 0
+          }
+        ]
+      },
+      "quality_rules": [
+        "The predictive lower bound does not exceed the point estimate.",
+        "The point estimate does not exceed the predictive upper bound.",
+        "Probability of increase remains between zero and one."
+      ]
+    },
+    {
+      "name": "match_impacts",
+      "description": "Recent player-match ratings exposed to the API with human-readable component explanations and optional valuation replay outputs.",
+      "layer": "serving",
+      "owner": "analytics-engineering",
+      "grain": "one player-match impact row per rating version",
+      "paths": [
+        "data/serving/match_impacts.parquet"
+      ],
+      "primary_key": [
+        "player_id",
+        "match_id",
+        "rating_version"
+      ],
+      "upstream": [
+        "player_match_ratings",
+        "valuation_replay_results"
+      ],
+      "downstream": [
+        "fastapi_player_outlook"
+      ],
+      "field_checks": {
+        "rating": [
+          {
+            "type": "range",
+            "min": 1,
+            "max": 10
+          }
+        ],
+        "probability_value_increase": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 1
+          }
+        ]
+      },
+      "quality_rules": [
+        "Replay fields may be null until historical replay scoring runs.",
+        "Rating and minutes are inherited from the immutable rating output."
+      ]
+    },
+    {
+      "name": "player_profiles",
+      "description": "Long-form role-relative season profiles containing the underlying metric value and same-role EPL percentile.",
+      "layer": "serving",
+      "owner": "data-science",
+      "grain": "one player, season, and profile metric",
+      "paths": [
+        "data/serving/player_profiles.parquet"
+      ],
+      "published_aliases": [
+        "data/serving/profiles/competition=<competition>/season=<season>/player_profiles.parquet"
+      ],
+      "primary_key": [
+        "player_id",
+        "competition",
+        "season",
+        "metric_key"
+      ],
+      "partition_by": [
+        "competition",
+        "season"
+      ],
+      "upstream": [
+        "player_match_ratings",
+        "normalized_whoscored_events",
+        "feature_shots_with_models",
+        "feature_xthreat_actions",
+        "feature_xpv_actions"
+      ],
+      "downstream": [
+        "player_similarities",
+        "fastapi_player_profile"
+      ],
+      "field_checks": {
+        "primary_role_share": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 1
+          }
+        ],
+        "percentile": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "minutes": [
+          {
+            "type": "range",
+            "min": 0
+          }
+        ]
+      },
+      "quality_rules": [
+        "Metric keys are unique per player, competition, and season.",
+        "Percentiles remain between zero and 100.",
+        "Primary-role share remains between zero and one."
+      ]
+    },
+    {
+      "name": "player_similarities",
+      "description": "Ranked same-role player comparisons calculated from standardized role-specific season metrics.",
+      "layer": "serving",
+      "owner": "data-science",
+      "grain": "one selected player and similar-player pair per season",
+      "paths": [
+        "data/serving/player_similarities.parquet"
+      ],
+      "published_aliases": [
+        "data/serving/profiles/competition=<competition>/season=<season>/player_similarities.parquet"
+      ],
+      "primary_key": [
+        "player_id",
+        "competition",
+        "season",
+        "similar_player_id"
+      ],
+      "partition_by": [
+        "competition",
+        "season"
+      ],
+      "upstream": [
+        "player_profiles"
+      ],
+      "downstream": [
+        "fastapi_similar_players"
+      ],
+      "field_checks": {
+        "similarity": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "profile_similarity": [
+          {
+            "type": "range",
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "rank": [
+          {
+            "type": "range",
+            "min": 1
+          }
+        ]
+      },
+      "quality_rules": [
+        "A player cannot be returned as their own comparison.",
+        "Similarity scores remain between zero and 100.",
+        "Ranks are unique within each selected-player profile."
+      ]
+    }
+  ]
+}

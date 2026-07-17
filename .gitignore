@@ -91,3 +91,10 @@ models/ratings/**
 
 # Notebook checkpoints
 .ipynb_checkpoints/
+# dbt generated artifacts
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+
+/notebooks/
+/tmp/

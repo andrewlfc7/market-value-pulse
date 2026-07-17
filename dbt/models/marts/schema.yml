@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: player_outlook
+    description: >
+      Analytics-ready player snapshot joining current form, observed market
+      value, active valuation projection, and rating summary.
+    columns:
+      - name: player_id
+        description: Canonical player identifier.
+        data_tests: [not_null, unique]
+      - name: display_name
+        data_tests: [not_null]
+      - name: probability_value_increase
+        description: Posterior probability that value increased.
+      - name: estimated_value_eur
+        description: Current valuation point estimate.
+
+  - name: model_monitoring
+    description: >
+      Current valuation-model coverage and interval-width monitoring by
+      model version.
+    columns:
+      - name: model_version
+        data_tests: [not_null, unique]
+      - name: active_predictions
+        data_tests: [not_null]
+
+  - name: pipeline_health
+    description: >
+      Pipeline run history with normalized duration and attention flags.
+    columns:
+      - name: run_id
+        data_tests: [not_null, unique]
+      - name: status
+        data_tests: [not_null]
